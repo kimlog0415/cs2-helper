@@ -27,36 +27,25 @@ namespace CS2Helper
         private static readonly Regex ShutdownLine = new Regex(
             @"Server shutting down: NETWORK_DISCONNECT_(DISCONNECT_BY_USER|REQUEST_HOSTSTATE_IDLE)");
 
-        /// <summary>가장 마지막에 열린 서버의 접속 명령. 맵을 새로 열 때마다 주소가 바뀐다.</summary>
-        public static ServerInfo LastServer()
-        {
-            string found = null;
-            foreach (string line in ReadLines())
-            {
-                Match m = ServerIdLine.Match(line);
-                if (m.Success) found = line;
-            }
-            if (found == null) return null;
-
-            return new ServerInfo
-            {
-                Address = ServerIdLine.Match(found).Groups[1].Value,
-                OpenedAt = ParseTime(found),
-            };
-        }
-
-        /// <summary>지금 서버가 열려 있는지. 마지막 기록이 서버 시작인지 종료인지로 가른다.</summary>
-        public static DateTime? OpenServerTime(DateTime since)
+        /// <summary>
+        /// 지금 열려 있는 서버. 이미 닫혔거나 <paramref name="since"/> 이전 기록이면 null.
+        /// 로그는 CS2를 껐다 켜도 남아 있어서, 시각을 안 보면 죽은 주소를 집어 든다.
+        /// </summary>
+        public static ServerInfo CurrentServer(DateTime since)
         {
             string last = null;
             foreach (string line in ReadLines())
             {
                 if (ServerIdLine.IsMatch(line) || ShutdownLine.IsMatch(line)) last = line;
             }
-            if (last == null || !ServerIdLine.IsMatch(last)) return null;
+
+            Match opened = last == null ? Match.Empty : ServerIdLine.Match(last);
+            if (!opened.Success) return null;
 
             DateTime at = ParseTime(last);
-            return at < since ? (DateTime?)null : at;
+            if (at < since) return null;
+
+            return new ServerInfo { Address = opened.Groups[1].Value, OpenedAt = at };
         }
 
         /// <summary>로그 줄은 "MM/dd HH:mm:ss ..." 로 시작한다 (연도가 없어 올해로 읽는다).</summary>

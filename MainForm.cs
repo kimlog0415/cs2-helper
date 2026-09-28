@@ -215,9 +215,9 @@ namespace CS2Helper
             // F10을 먼저 둔다 — 친구들이 들어온 뒤로는 이쪽이 기본이고, F9는 주소가 바뀌어 다 끊긴다
             _status.Text =
                 "저장됐어요!  (" + mode.Name + " / " + map.Name + ")" + note + "\n\n" +
-                "▶ 버튼 : CS2 켜고 이 설정으로 서버 열기\n" +
-                "F10 : (게임 중) 맵·모드 바꾸기 — 친구들 그대로\n" +
-                "F9  : (게임 중) 서버 새로 열기 — 친구들 끊김\n\n" +
+                "▶ 버튼 : CS2 켜고 서버 열기 (항상 이걸로 켜세요)\n" +
+                "F10 : (맵 안에서) 맵·모드 바꾸기 — 친구들 그대로\n" +
+                "F9  : (맵 안에서) 서버 새로 열기 — 친구들 끊김\n\n" +
                 "※ 방장이 메뉴로 나가면 서버가 닫혀요";
         }
 
@@ -242,19 +242,13 @@ namespace CS2Helper
                 return;
             }
 
-            DateTime? opened = OpenServerTime(cs2);
-            if (opened.HasValue)
+            ServerInfo opened = CurrentServer(cs2);
+            if (opened != null)
                 SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
-                    "●  서버 열림 (" + opened.Value.ToString("HH:mm") + ") · 게임 중 F9 / F10");
+                    "●  서버 열림 (" + opened.OpenedAt.ToString("HH:mm") + ") · 맵 안에서 F9 / F10");
             else
                 SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue,
                     "●  CS2 실행 중 · 서버 없음 (메인 화면)");
-        }
-
-        private static DateTime? OpenServerTime(Process cs2)
-        {
-            try { return ConsoleLog.OpenServerTime(cs2.StartTime.AddSeconds(-5)); }
-            catch (Exception) { return null; }
         }
 
         private void SetBanner(Color back, Color fore, string text)
@@ -322,8 +316,8 @@ namespace CS2Helper
 
         private void OnServerTick(object sender, EventArgs e)
         {
-            ServerInfo server = ConsoleLog.LastServer();
-            if (server != null && server.OpenedAt >= _launchedAt.AddSeconds(-5))
+            ServerInfo server = ConsoleLog.CurrentServer(_launchedAt.AddSeconds(-5));
+            if (server != null)
             {
                 _watchServer.Stop();
                 _launch.Enabled = true;
@@ -375,13 +369,35 @@ namespace CS2Helper
             "※ 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
             "   공개된 곳에 올리지 말고 친구에게만 보내세요.";
 
+        /// <summary>지금 살아 있는 서버만 돌려준다. 죽은 주소를 친구에게 보내면 안 된다.</summary>
         private ServerInfo FindServer()
         {
-            ServerInfo server = ConsoleLog.LastServer();
+            Process cs2 = Cs2Process.Find();
+            if (cs2 == null)
+            {
+                Tell("CS2가 꺼져 있어요.\n▶ 버튼으로 서버를 열어주세요.");
+                return null;
+            }
+
+            if (!Cs2Process.HasCondebug(cs2))
+            {
+                Tell("이 CS2는 앱으로 켠 게 아니라 주소를 읽을 수 없어요.\n\n" +
+                     "▶ 버튼으로 다시 켜주세요.");
+                return null;
+            }
+
+            ServerInfo server = CurrentServer(cs2);
             if (server == null)
-                Tell("서버를 찾지 못했어요.\n먼저 [CS2 켜고 서버 열기]로 서버를 열어주세요.");
+                Tell("열려 있는 서버가 없어요.\n\n" +
+                     "▶ 버튼으로 서버를 열거나,\n맵 안에서 F9를 눌러주세요.");
 
             return server;
+        }
+
+        private static ServerInfo CurrentServer(Process cs2)
+        {
+            try { return ConsoleLog.CurrentServer(cs2.StartTime.AddSeconds(-5)); }
+            catch (Exception) { return null; }
         }
 
         private static void CopyToClipboard(string text)
