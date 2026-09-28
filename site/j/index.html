@@ -85,6 +85,19 @@
   }
   button.copy:hover { border-color: var(--blue); }
 
+  input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--gold);
+    font-family: Consolas, "D2Coding", monospace;
+    font-size: 14px;
+  }
+  input:focus { outline: none; border-color: var(--blue); }
+  .err { margin: 10px 0 0; color: #e8825a; }
+
   .warn { margin-top: 20px; font-size: 13px; color: var(--muted); text-align: center; }
   footer { margin-top: 28px; font-size: 12px; color: #6d7d90; text-align: center; }
   footer a { color: #8fa3b8; }
@@ -126,9 +139,11 @@
   </div>
 
   <div class="card" id="noAddress" hidden>
-    <h2>주소가 없습니다</h2>
-    <p>이 페이지는 친구가 보내 준 참가 링크로 열어야 합니다. 링크를 다시 받아 주세요.</p>
-    <p>서버를 여는 쪽이라면 CS2 Practice Host 앱의 「참가 링크 복사」 버튼으로 링크를 만들 수 있습니다.</p>
+    <h2>서버 주소를 붙여넣어 주세요</h2>
+    <p>친구에게 받은 주소를 그대로 넣으면 됩니다. <b>connect</b> 가 앞에 붙어 있어도 괜찮습니다.</p>
+    <input id="manual" type="text" placeholder="connect [A:1:1509803029:51596]" autocomplete="off" spellcheck="false">
+    <p class="err" id="manualErr" hidden>주소 형식이 아닙니다. 받은 내용을 그대로 붙여넣어 주세요.</p>
+    <button class="copy" id="manualGo">이 주소로 들어가기</button>
   </div>
 
   <p class="warn" id="warn" hidden>※ 주소를 아는 사람은 누구나 들어올 수 있습니다. 공개된 곳에 올리지 마세요.</p>
@@ -142,16 +157,17 @@
 (function () {
   var APP_ID = 730;
 
-  // 주소는 [A:1:1509803029:51596] 형태. 링크로 오갈 때 대괄호가 떨어지기도 해서 양쪽 다 받는다.
-  function readAddress() {
-    var raw = new URLSearchParams(location.search).get("a");
-    if (!raw) return null;
+  // 주소는 [A:1:1509803029:51596] 형태. 대괄호가 떨어지거나 connect 가 앞에 붙거나
+  // 링크째 붙여넣어도 받아들이려고, 감싼 것을 따지지 않고 안에서 찾아낸다.
+  var PATTERN = /A:\d+:\d+:\d+/;
 
-    var inner = raw.trim().replace(/^\[|\]$/g, "");
-    return /^A:\d+:\d+:\d+$/.test(inner) ? "[" + inner + "]" : null;
+  function normalize(raw) {
+    var found = raw ? PATTERN.exec(raw) : null;
+    return found ? "[" + found[0] + "]" : null;
   }
 
   function show(id) { document.getElementById(id).hidden = false; }
+  function hide(id) { document.getElementById(id).hidden = true; }
 
   function bindCopy() {
     var buttons = document.querySelectorAll("button.copy");
@@ -170,32 +186,51 @@
     }
   }
 
-  var address = readAddress();
-  bindCopy();
+  function showJoin(address) {
+    hide("noAddress");
+    document.getElementById("consoleCmd").textContent = "connect " + address;
+    document.getElementById("pageUrl").textContent = location.href;
+    show("warn");
 
-  if (!address) {
-    document.getElementById("lead").textContent = "참가 링크가 올바르지 않습니다.";
-    show("noAddress");
-    return;
-  }
+    // CS2는 PC 전용이라 휴대폰에서는 접속 버튼이 의미가 없다. 카카오톡은 폰에서 보는 사람이 많다.
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      document.getElementById("lead").textContent = "PC에서 열어야 들어갈 수 있습니다.";
+      show("mobile");
+      show("fallback");
+      return;
+    }
 
-  document.getElementById("consoleCmd").textContent = "connect " + address;
-  document.getElementById("pageUrl").textContent = location.href;
-  show("warn");
-
-  // CS2는 PC 전용이라 휴대폰에서는 접속 버튼이 의미가 없다. 카카오톡은 폰에서 보는 사람이 많다.
-  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    document.getElementById("lead").textContent = "PC에서 열어야 들어갈 수 있습니다.";
-    show("mobile");
+    var go = document.getElementById("go");
+    go.href = "steam://rungameid/" + APP_ID + "//+connect " + address;
+    document.getElementById("lead").textContent = "친구가 연 서버로 들어갑니다.";
+    show("go");
+    show("after");
     show("fallback");
-    return;
   }
 
-  var go = document.getElementById("go");
-  go.href = "steam://rungameid/" + APP_ID + "//+connect " + address;
-  show("go");
-  show("after");
-  show("fallback");
+  function bindManualEntry() {
+    var input = document.getElementById("manual");
+    var submit = function () {
+      var address = normalize(input.value);
+      if (address) showJoin(address);
+      else show("manualErr");
+    };
+    document.getElementById("manualGo").addEventListener("click", submit);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
+    input.addEventListener("input", function () { hide("manualErr"); });
+  }
+
+  bindCopy();
+  bindManualEntry();
+
+  var address = normalize(new URLSearchParams(location.search).get("a"));
+  if (address) {
+    showJoin(address);
+  } else {
+    document.getElementById("lead").textContent = "서버 주소가 필요합니다.";
+    show("noAddress");
+    document.getElementById("manual").focus();
+  }
 })();
 </script>
 </body>
