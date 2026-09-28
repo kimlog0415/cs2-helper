@@ -30,6 +30,9 @@ namespace CS2Helper
         private DateTime _launchedAt;
         private bool _loading = true;
 
+        /// <summary>이미 복사해 준 서버. 맵 안에서 F9로 연 서버도 이걸로 알아챈다.</summary>
+        private string _copiedAddress;
+
         public MainForm(Settings settings)
         {
             _settings = settings;
@@ -244,11 +247,32 @@ namespace CS2Helper
 
             ServerInfo opened = CurrentServer(cs2);
             if (opened != null)
+            {
                 SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
                     "●  서버 열림 (" + opened.OpenedAt.ToString("HH:mm") + ") · 맵 안에서 F9 / F10");
+                NoticeNewServer(opened);
+            }
             else
                 SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue,
                     "●  CS2 실행 중 · 서버 없음 (메인 화면)");
+        }
+
+        /// <summary>처음 보는 서버면 링크를 복사해 알린다. ▶로 열었든 맵 안에서 F9로 열었든 같다.</summary>
+        private void NoticeNewServer(ServerInfo server)
+        {
+            if (server.Address == _copiedAddress) return;
+            _copiedAddress = server.Address;
+
+            _watchServer.Stop();
+            _launch.Enabled = true;
+
+            CopyToClipboard(server.JoinLink);
+            SystemSounds.Asterisk.Play();
+            _status.Text =
+                "서버가 열렸어요! 참가 링크가 복사됐어요.\n" +
+                "카톡/디스코드에 Ctrl+V 로 보내세요.\n" +
+                "친구가 누르면 CS2가 켜지면서 바로 들어와요.\n\n" +
+                server.JoinLink;
         }
 
         private void SetBanner(Color back, Color fore, string text)
@@ -268,15 +292,22 @@ namespace CS2Helper
                 return;
             }
 
-            if (Cs2Process.Find() != null)
+            Process running = Cs2Process.Find();
+            if (running != null)
             {
-                DialogResult answer = MessageBox.Show(
-                    "CS2가 이미 켜져 있어요.\n\n" +
-                    "게임 안이라면 [아니요]를 누르고 게임에서 F9를 누르세요.\n" +
-                    "메인 화면이라면 [예]를 누르면 CS2를 껐다가 새로 켜서 서버를 열어요.",
-                    Program.Title, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                // 버튼에 "다시 켜고"라고 적혀 있으니 그대로 한다.
+                // 서버가 열려 있을 때만 묻는다 — 친구들이 들어와 있으면 말없이 끊으면 안 된다.
+                if (Cs2Process.HasCondebug(running) && CurrentServer(running) != null)
+                {
+                    DialogResult answer = MessageBox.Show(
+                        "지금 서버가 열려 있어요.\n\n" +
+                        "새로 켜면 들어와 있는 친구들이 전부 끊겨요.\n" +
+                        "맵·모드만 바꿀 거라면 [아니요]를 누르고 맵 안에서 F10을 쓰세요.\n\n" +
+                        "그래도 CS2를 껐다가 새로 켤까요?",
+                        Program.Title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-                if (answer != DialogResult.Yes) return;
+                    if (answer != DialogResult.Yes) return;
+                }
 
                 _launch.Enabled = false;
                 Cursor = Cursors.WaitCursor;
@@ -316,20 +347,9 @@ namespace CS2Helper
 
         private void OnServerTick(object sender, EventArgs e)
         {
-            ServerInfo server = ConsoleLog.CurrentServer(_launchedAt.AddSeconds(-5));
-            if (server != null)
-            {
-                _watchServer.Stop();
-                _launch.Enabled = true;
-                CopyToClipboard(server.JoinLink);
-                SystemSounds.Asterisk.Play();
-                _status.Text =
-                    "서버가 열렸어요! 참가 링크가 복사됐어요.\n" +
-                    "카톡/디스코드에 Ctrl+V 로 보내세요.\n" +
-                    "친구가 누르면 CS2가 켜지면서 바로 들어와요.\n\n" +
-                    server.JoinLink;
-            }
-            else if ((DateTime.Now - _launchedAt).TotalMinutes > 4)
+            // 서버를 찾아 알리는 일은 상태 표시줄 쪽(NoticeNewServer)이 맡는다.
+            // 여기는 너무 오래 걸릴 때 포기하는 역할만 한다.
+            if ((DateTime.Now - _launchedAt).TotalMinutes > 4)
             {
                 _watchServer.Stop();
                 _launch.Enabled = true;
