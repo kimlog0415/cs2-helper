@@ -161,9 +161,11 @@ namespace CS2Helper
         {
             GameMap keep = SelectedMap;
 
+            // 시작할 때도 불리므로 불러오는 중이라는 표시를 덮어쓰면 안 된다
+            bool wasLoading = _loading;
             _loading = true;
             FillMaps(keep != null ? keep.Id : null);
-            _loading = false;
+            _loading = wasLoading;
 
             SaveAll();
         }
@@ -172,7 +174,10 @@ namespace CS2Helper
 
         private void SaveAll()
         {
-            if (_loading || _mode.SelectedIndex < 0 || _map.SelectedIndex < 0) return;
+            // 하나라도 아직 안 정해졌으면 저장하지 않는다 (되살리는 도중에 불릴 수 있다)
+            if (_loading) return;
+            foreach (ComboBox box in new[] { _mode, _map, _bots, _level, _team })
+                if (box.SelectedIndex < 0) return;
 
             GameMode mode = SelectedMode;
             GameMap map = SelectedMap;
