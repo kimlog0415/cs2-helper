@@ -55,7 +55,7 @@ namespace CS2PracticeHost
         {
             Text = Program.Title;
             Font = new Font("맑은 고딕", 10);
-            ClientSize = new Size(380, 588);
+            ClientSize = new Size(380, 612);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -79,25 +79,25 @@ namespace CS2PracticeHost
             AddRow("봇 팀", _team, ref y);
 
             _status.Location = new Point(20, y + 2);
-            _status.Size = new Size(340, 168);
+            _status.Size = new Size(340, 192);
             _status.ForeColor = Color.DarkGreen;
             Controls.Add(_status);
 
             _launch.Text = "▶  CS2 켜고 서버 열기";
             _launch.Font = new Font("맑은 고딕", 11, FontStyle.Bold);
-            _launch.Location = new Point(20, 438);
+            _launch.Location = new Point(20, 462);
             _launch.Size = new Size(340, 46);
             _launch.Click += OnLaunchClick;
             Controls.Add(_launch);
 
             _copyLink.Text = "참가 링크 복사 (친구에게 보내기)";
-            _copyLink.Location = new Point(20, 492);
+            _copyLink.Location = new Point(20, 516);
             _copyLink.Size = new Size(340, 40);
             _copyLink.Click += OnCopyLinkClick;
             Controls.Add(_copyLink);
 
             _copyAddress.Text = "콘솔용 주소 복사";
-            _copyAddress.Location = new Point(20, 540);
+            _copyAddress.Location = new Point(20, 564);
             _copyAddress.Size = new Size(340, 32);
             _copyAddress.Click += OnCopyAddressClick;
             Controls.Add(_copyAddress);
@@ -212,7 +212,7 @@ namespace CS2PracticeHost
             if (_watchServer.Enabled) return;   // 서버 여는 중에는 진행 상황 문구를 유지한다
 
             string note = mode.BotsConfigurable
-                ? ""
+                ? OneSidedBotNote()
                 : "\n※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)";
 
             // F10을 먼저 둔다 — 친구들이 들어온 뒤로는 이쪽이 기본이고, F9는 주소가 바뀌어 다 끊긴다
@@ -221,7 +221,23 @@ namespace CS2PracticeHost
                 "▶ 버튼 : CS2 켜고 서버 열기 (항상 이걸로 켜세요)\n" +
                 "F10 : (맵 안에서) 맵·모드 바꾸기 — 친구들 그대로\n" +
                 "F9  : (맵 안에서) 서버 새로 열기 — 친구들 끊김\n\n" +
+                "※ 봇 설정은 맵을 새로 열 때 반영돼요\n" +
                 "※ 방장이 메뉴로 나가면 서버가 닫혀요";
+        }
+
+        /// <summary>
+        /// 봇을 한쪽 팀으로 몰면 게임이 팀 인원 차이를 2명으로 제한해 「사람 수 + 2」에서 멈춘다.
+        /// 고를 수는 있는데 그만큼 안 나오는 상태라, 이유를 알려주지 않으면 고장으로 보인다.
+        /// </summary>
+        private string OneSidedBotNote()
+        {
+            bool oneSided = _team.SelectedIndex >= 0
+                && GameData.BotTeams[_team.SelectedIndex].Value != "any";
+
+            if (!oneSided || _bots.SelectedIndex <= 1) return "";
+
+            return "\n※ 한 팀으로 몰면 봇은 「사람 수 + 2」까지만 나와요\n" +
+                   "   (다 채우려면 봇 팀을 「양쪽에 섞기」로)";
         }
 
         // ---------- 상태 표시줄 ----------
