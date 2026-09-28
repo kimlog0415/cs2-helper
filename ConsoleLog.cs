@@ -9,8 +9,15 @@ namespace CS2Helper
 {
     internal sealed class ServerInfo
     {
-        public string ConnectCommand;
+        /// <summary>[A:1:1509803029:51595] 형태의 서버 주소.</summary>
+        public string Address;
         public DateTime OpenedAt;
+
+        /// <summary>콘솔에 직접 치는 형태.</summary>
+        public string ConnectCommand { get { return "connect " + Address; } }
+
+        /// <summary>누르면 CS2가 켜지면서 바로 접속되는 링크. 친구 쪽에 앱·콘솔 설정이 필요 없다.</summary>
+        public string JoinLink { get { return "steam://rungameid/730//+connect " + Address; } }
     }
 
     /// <summary>-condebug 가 남기는 console.log 에서 서버 상태를 읽는다.</summary>
@@ -33,7 +40,7 @@ namespace CS2Helper
 
             return new ServerInfo
             {
-                ConnectCommand = "connect " + ServerIdLine.Match(found).Groups[1].Value,
+                Address = ServerIdLine.Match(found).Groups[1].Value,
                 OpenedAt = ParseTime(found),
             };
         }

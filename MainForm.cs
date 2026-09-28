@@ -21,7 +21,8 @@ namespace CS2Helper
         private readonly ComboBox _level = new ComboBox();
         private readonly ComboBox _team = new ComboBox();
         private readonly Button _launch = new Button();
-        private readonly Button _copy = new Button();
+        private readonly Button _copyLink = new Button();
+        private readonly Button _copyAddress = new Button();
         private readonly Timer _watchServer = new Timer { Interval = 2000 };
         private readonly Timer _watchProcess = new Timer { Interval = 3000 };
 
@@ -51,7 +52,7 @@ namespace CS2Helper
         {
             Text = Program.Title;
             Font = new Font("맑은 고딕", 10);
-            ClientSize = new Size(380, 548);
+            ClientSize = new Size(380, 588);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -86,11 +87,17 @@ namespace CS2Helper
             _launch.Click += OnLaunchClick;
             Controls.Add(_launch);
 
-            _copy.Text = "서버 주소 복사 (친구들에게 보내기)";
-            _copy.Location = new Point(20, 492);
-            _copy.Size = new Size(340, 40);
-            _copy.Click += OnCopyClick;
-            Controls.Add(_copy);
+            _copyLink.Text = "참가 링크 복사 (친구에게 보내기)";
+            _copyLink.Location = new Point(20, 492);
+            _copyLink.Size = new Size(340, 40);
+            _copyLink.Click += OnCopyLinkClick;
+            Controls.Add(_copyLink);
+
+            _copyAddress.Text = "콘솔용 주소 복사";
+            _copyAddress.Location = new Point(20, 540);
+            _copyAddress.Size = new Size(340, 32);
+            _copyAddress.Click += OnCopyAddressClick;
+            Controls.Add(_copyAddress);
         }
 
         private void AddRow(string label, ComboBox box, ref int y)
@@ -300,7 +307,7 @@ namespace CS2Helper
             _watchServer.Start();
             _status.Text =
                 "CS2 켜는 중...  (" + mode.Name + " / " + map.Name + ")\n\n" +
-                "서버가 열리면 친구들에게 보낼 주소가\n자동으로 복사돼요. (1분 정도 걸려요)";
+                "서버가 열리면 친구에게 보낼 참가 링크가\n자동으로 복사돼요. (1분 정도 걸려요)";
         }
 
         /// <summary>-condebug·바인드까지 인자로 붙여 사용자가 Steam 설정을 건드릴 일이 없게 한다.</summary>
@@ -320,11 +327,13 @@ namespace CS2Helper
             {
                 _watchServer.Stop();
                 _launch.Enabled = true;
-                CopyToClipboard(server.ConnectCommand);
+                CopyToClipboard(server.JoinLink);
                 SystemSounds.Asterisk.Play();
                 _status.Text =
-                    "서버가 열렸어요! 주소가 복사됐어요.\n카톡/디스코드에 Ctrl+V 로 보내세요.\n\n" +
-                    server.ConnectCommand;
+                    "서버가 열렸어요! 참가 링크가 복사됐어요.\n" +
+                    "카톡/디스코드에 Ctrl+V 로 보내세요.\n" +
+                    "친구가 누르면 CS2가 켜지면서 바로 들어와요.\n\n" +
+                    server.JoinLink;
             }
             else if ((DateTime.Now - _launchedAt).TotalMinutes > 4)
             {
@@ -334,23 +343,45 @@ namespace CS2Helper
             }
         }
 
-        // ---------- 서버 주소 복사 ----------
+        // ---------- 친구에게 보내기 ----------
 
-        private void OnCopyClick(object sender, EventArgs e)
+        private void OnCopyLinkClick(object sender, EventArgs e)
+        {
+            ServerInfo server = FindServer();
+            if (server == null) return;
+
+            CopyToClipboard(server.JoinLink);
+            Tell("참가 링크가 복사됐어요!\n카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n" +
+                 server.JoinLink + "\n\n" +
+                 "친구가 이 링크를 누르면 CS2가 켜지면서\n바로 서버로 들어와요. (콘솔 설정 필요 없음)\n\n" +
+                 "글자로만 보이고 눌리지 않으면,\n친구에게 복사해서 실행창(Win+R)에 붙여넣으라고 하세요.\n\n" +
+                 SharingWarning);
+        }
+
+        private void OnCopyAddressClick(object sender, EventArgs e)
+        {
+            ServerInfo server = FindServer();
+            if (server == null) return;
+
+            CopyToClipboard(server.ConnectCommand);
+            Tell("콘솔용 주소가 복사됐어요.\n\n" +
+                 server.ConnectCommand + "\n\n" +
+                 "친구가 게임 콘솔(~ 키)에 붙여넣는 방식이에요.\n" +
+                 "보통은 [참가 링크 복사] 쪽이 더 편해요.\n\n" +
+                 SharingWarning);
+        }
+
+        private const string SharingWarning =
+            "※ 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
+            "   공개된 곳에 올리지 말고 친구에게만 보내세요.";
+
+        private ServerInfo FindServer()
         {
             ServerInfo server = ConsoleLog.LastServer();
             if (server == null)
-            {
                 Tell("서버를 찾지 못했어요.\n먼저 [CS2 켜고 서버 열기]로 서버를 열어주세요.");
-                return;
-            }
 
-            CopyToClipboard(server.ConnectCommand);
-            Tell("복사됐어요! 카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n" +
-                 server.ConnectCommand + "\n\n" +
-                 "(서버 연 시각: " + server.OpenedAt.ToString("HH:mm:ss") + ")\n\n" +
-                 "※ 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
-                 "   공개된 곳에 올리지 말고 친구에게만 보내세요.");
+            return server;
         }
 
         private static void CopyToClipboard(string text)
