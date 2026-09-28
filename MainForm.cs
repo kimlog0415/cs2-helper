@@ -51,7 +51,7 @@ namespace CS2Helper
         {
             Text = Program.Title;
             Font = new Font("맑은 고딕", 10);
-            ClientSize = new Size(380, 494);
+            ClientSize = new Size(380, 548);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -75,19 +75,19 @@ namespace CS2Helper
             AddRow("봇 팀", _team, ref y);
 
             _status.Location = new Point(20, y + 2);
-            _status.Size = new Size(340, 110);
+            _status.Size = new Size(340, 168);
             _status.ForeColor = Color.DarkGreen;
             Controls.Add(_status);
 
             _launch.Text = "▶  CS2 켜고 서버 열기";
             _launch.Font = new Font("맑은 고딕", 11, FontStyle.Bold);
-            _launch.Location = new Point(20, 384);
+            _launch.Location = new Point(20, 438);
             _launch.Size = new Size(340, 46);
             _launch.Click += OnLaunchClick;
             Controls.Add(_launch);
 
             _copy.Text = "서버 주소 복사 (친구들에게 보내기)";
-            _copy.Location = new Point(20, 438);
+            _copy.Location = new Point(20, 492);
             _copy.Size = new Size(340, 40);
             _copy.Click += OnCopyClick;
             Controls.Add(_copy);
@@ -205,11 +205,13 @@ namespace CS2Helper
                 ? ""
                 : "\n※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)";
 
+            // F10을 먼저 둔다 — 친구들이 들어온 뒤로는 이쪽이 기본이고, F9는 주소가 바뀌어 다 끊긴다
             _status.Text =
                 "저장됐어요!  (" + mode.Name + " / " + map.Name + ")" + note + "\n\n" +
                 "▶ 버튼 : CS2 켜고 이 설정으로 서버 열기\n" +
-                "F9  : (게임 중) 이 설정으로 서버 새로 열기\n" +
-                "F10 : (게임 중) 맵/모드만 바꾸기, 친구들 그대로";
+                "F10 : (게임 중) 맵·모드 바꾸기 — 친구들 그대로\n" +
+                "F9  : (게임 중) 서버 새로 열기 — 친구들 끊김\n\n" +
+                "※ 방장이 메뉴로 나가면 서버가 닫혀요";
         }
 
         // ---------- 상태 표시줄 ----------
