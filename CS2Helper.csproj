@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>CS2Helper</AssemblyName>
+    <RootNamespace>CS2Helper</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- 배포물이 exe 하나여야 해서 NuGet 의존성을 두지 않는다 (net48은 단일 파일 publish가 없다) -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Product>CS2 방장 도우미</Product>
+    <AssemblyTitle>CS2 방장 도우미</AssemblyTitle>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- settings.json 직렬화 (NuGet 없이 쓰려고 .NET Framework 내장 것을 쓴다) -->
+    <Reference Include="System.Runtime.Serialization" />
+    <!-- 실행 중인 cs2.exe의 명령줄을 읽어 -condebug 여부를 확인 -->
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
+</Project>
