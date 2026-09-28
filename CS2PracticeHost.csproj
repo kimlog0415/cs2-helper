@@ -5,14 +5,19 @@
     <TargetFramework>net48</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>CS2Helper</AssemblyName>
-    <RootNamespace>CS2Helper</RootNamespace>
+    <AssemblyName>CS2PracticeHost</AssemblyName>
+    <RootNamespace>CS2PracticeHost</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <!-- 배포물이 exe 하나여야 해서 NuGet 의존성을 두지 않는다 (net48은 단일 파일 publish가 없다) -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Product>CS2 방장 도우미</Product>
-    <AssemblyTitle>CS2 방장 도우미</AssemblyTitle>
+    <Product>CS2 Practice Host</Product>
+    <AssemblyTitle>CS2 Practice Host</AssemblyTitle>
+    <Company>LOGSTONE</Company>
+    <Description>Counter-Strike 2 연습 서버 방장 도우미</Description>
+    <!-- 파일 속성에서도 비공식임이 보이게 한다 -->
+    <Copyright>LOGSTONE · 비공식 도구, Valve 및 Counter-Strike와 무관</Copyright>
     <Version>0.1.0</Version>
   </PropertyGroup>
 

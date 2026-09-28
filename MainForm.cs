@@ -7,7 +7,7 @@ using System.Media;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     internal sealed class MainForm : Form
     {
@@ -60,8 +60,8 @@ namespace CS2Helper
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
 
-            // 발베 아이콘을 재배포하지 않고 사용자 PC의 cs2.exe에서 꺼내 쓴다
-            try { Icon = Icon.ExtractAssociatedIcon(Cs2Paths.Cs2Exe); }
+            // exe에 박아 둔 자기 아이콘 (Valve 자산을 쓰지 않는다)
+            try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
             catch (Exception) { }
 
             _banner.Location = new Point(20, 14);

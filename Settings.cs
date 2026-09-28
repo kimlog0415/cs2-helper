@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     [DataContract]
     internal sealed class Settings
@@ -22,7 +22,7 @@ namespace CS2Helper
             get
             {
                 string dir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CS2Helper");
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CS2PracticeHost");
                 return Path.Combine(dir, "settings.json");
             }
         }

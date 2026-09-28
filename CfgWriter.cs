@@ -3,12 +3,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     /// <summary>CS2 cfg 폴더에 설정 파일을 쓴다.</summary>
     internal static class CfgWriter
     {
-        public const string Marker = "// CS2 방장 도우미가 만든 파일";
+        public const string Marker = "// CS2 Practice Host가 만든 파일";
+
+        /// <summary>이름을 바꾸기 전 마커. 이걸 안 알아보면 옛 파일을 남의 것으로 여겨 갱신을 멈춘다.</summary>
+        private const string OldMarker = "// CS2 방장 도우미가 만든 파일";
 
         // 사용자의 기존 cfg와 겹치지 않도록 접두사를 붙인다
         public const string HostCfg = "cs2host_host";
@@ -80,7 +83,10 @@ namespace CS2Helper
             try
             {
                 using (var reader = new StreamReader(path, NoBom))
-                    return reader.ReadLine() == Marker;
+                {
+                    string first = reader.ReadLine();
+                    return first == Marker || first == OldMarker;
+                }
             }
             catch (IOException) { return false; }
         }

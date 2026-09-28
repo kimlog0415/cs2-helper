@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     internal sealed class ServerInfo
     {

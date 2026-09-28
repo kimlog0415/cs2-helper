@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     internal sealed class GameMap
     {

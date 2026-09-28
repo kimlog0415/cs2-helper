@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     /// <summary>Steam·CS2 설치 위치를 찾는다. 못 찾으면 사용자가 직접 고른다.</summary>
     internal static class Cs2Paths

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Threading;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     internal static class Cs2Process
     {

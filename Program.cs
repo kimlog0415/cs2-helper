@@ -3,11 +3,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace CS2Helper
+namespace CS2PracticeHost
 {
     internal static class Program
     {
-        public const string Title = "CS2 방장 도우미";
+        public const string Title = "CS2 Practice Host";
 
         /// <summary>
         /// 본 창이 뜨기 전에 띄우는 창은 주인이 없으면 다른 창 뒤로 숨는다.
