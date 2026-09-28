@@ -150,6 +150,8 @@ namespace CS2Helper
             _map.Items.Clear();
             foreach (GameMap m in _maps) _map.Items.Add(m.Name);
 
+            if (_maps.Length == 0) return;   // 설치된 맵이 없으면 고를 것도 없다 (빈 목록에 SelectedIndex를 주면 예외)
+
             int index = Array.FindIndex(_maps, m => m.Id == wantedId);
             if (index < 0) index = Array.FindIndex(_maps, m => m.Id == "de_dust2");
             _map.SelectedIndex = Math.Max(0, index);
@@ -277,6 +279,11 @@ namespace CS2Helper
 
             GameMode mode = SelectedMode;
             GameMap map = SelectedMap;
+            if (map == null)
+            {
+                Tell("고를 수 있는 맵이 없어요.\nCS2 설치 폴더를 제대로 찾았는지 확인해 주세요.");
+                return;
+            }
 
             CfgWriter.WriteBindCfg();
             Process.Start(Cs2Paths.SteamExe, LaunchArguments(mode, map));
