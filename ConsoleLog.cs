@@ -16,8 +16,15 @@ namespace CS2PracticeHost
         /// <summary>콘솔에 직접 치는 형태.</summary>
         public string ConnectCommand { get { return "connect " + Address; } }
 
-        /// <summary>누르면 CS2가 켜지면서 바로 접속되는 링크. 친구 쪽에 앱·콘솔 설정이 필요 없다.</summary>
-        public string JoinLink { get { return "steam://rungameid/730//+connect " + Address; } }
+        /// <summary>
+        /// 친구에게 보내는 링크. 누르면 중계 페이지가 열리고 거기서 게임으로 넘어간다.
+        /// steam:// 주소를 바로 보내지 않는 이유는 메신저가 그걸 링크로 만들어 주지 않고,
+        /// 주소 안의 공백에서 뒤를 잘라 버리기 때문이다. https는 어디서든 링크가 된다.
+        /// </summary>
+        public string JoinLink
+        {
+            get { return "https://cs2.logstone.net/j/?a=" + Address.Trim('[', ']'); }
+        }
     }
 
     /// <summary>-condebug 가 남기는 console.log 에서 서버 상태를 읽는다.</summary>

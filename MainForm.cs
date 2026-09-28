@@ -287,7 +287,7 @@ namespace CS2PracticeHost
             _status.Text =
                 "서버가 열렸어요! 참가 링크가 복사됐어요.\n" +
                 "카톡/디스코드에 Ctrl+V 로 보내세요.\n" +
-                "친구가 누르면 CS2가 켜지면서 바로 들어와요.\n\n" +
+                "친구가 누르면 안내 페이지를 거쳐 바로 들어와요.\n\n" +
                 server.JoinLink;
         }
 
@@ -383,8 +383,9 @@ namespace CS2PracticeHost
             CopyToClipboard(server.JoinLink);
             Tell("참가 링크가 복사됐어요!\n카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n" +
                  server.JoinLink + "\n\n" +
-                 "친구가 이 링크를 누르면 CS2가 켜지면서\n바로 서버로 들어와요. (콘솔 설정 필요 없음)\n\n" +
-                 "글자로만 보이고 눌리지 않으면,\n친구에게 복사해서 실행창(Win+R)에 붙여넣으라고 하세요.\n\n" +
+                 "친구가 링크를 누르면 안내 페이지가 열리고,\n" +
+                 "거기서 [게임 접속하기]를 누르면 바로 들어와요.\n" +
+                 "친구 쪽에 설치할 것도 콘솔 설정도 없어요.\n\n" +
                  SharingWarning);
         }
 
