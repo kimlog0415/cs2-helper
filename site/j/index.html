@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS2 연습 서버 참가</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="친구가 연 CS2 연습 서버에 들어갑니다.">
+<style>
+  :root {
+    --bg-top: #1e364d;
+    --bg-bottom: #0c1723;
+    --gold: #f2b233;
+    --gold-dim: #c98d1e;
+    --blue: #5b9bd5;
+    --text: #e8edf3;
+    --muted: #9bacbf;
+    --card: rgba(255, 255, 255, 0.05);
+    --line: rgba(255, 255, 255, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: linear-gradient(170deg, var(--bg-top), var(--bg-bottom));
+    color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  main { width: 100%; max-width: 420px; }
+  .mark { display: block; margin: 0 auto 20px; }
+  h1 { margin: 0 0 8px; font-size: 22px; text-align: center; }
+  .lead { margin: 0 0 24px; text-align: center; color: var(--muted); font-size: 15px; }
+
+  .go {
+    display: block;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: var(--gold);
+    color: #23180a;
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+  .go:hover { background: #ffc44d; }
+
+  .after { margin: 14px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+
+  .card {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    font-size: 14px;
+  }
+  .card h2 { margin: 0 0 8px; font-size: 14px; color: var(--blue); }
+  .card p { margin: 0 0 10px; color: var(--muted); }
+  code {
+    display: block;
+    padding: 10px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--gold);
+    font-family: Consolas, "D2Coding", monospace;
+    font-size: 13px;
+    word-break: break-all;
+  }
+  button.copy {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button.copy:hover { border-color: var(--blue); }
+
+  .warn { margin-top: 20px; font-size: 13px; color: var(--muted); text-align: center; }
+  footer { margin-top: 28px; font-size: 12px; color: #6d7d90; text-align: center; }
+  footer a { color: #8fa3b8; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="mark" width="64" height="64" viewBox="0 0 512 512" aria-hidden="true">
+    <rect width="512" height="512" rx="110" fill="#16283a"/>
+    <circle cx="256" cy="256" r="206" fill="none" stroke="#5b9bd5" stroke-width="11"/>
+    <g fill="#f2b233">
+      <rect x="50" y="240" width="56" height="31" rx="4"/><rect x="406" y="240" width="56" height="31" rx="4"/>
+      <rect x="240" y="50" width="31" height="56" rx="4"/><rect x="240" y="406" width="31" height="56" rx="4"/>
+      <rect x="106" y="249" width="104" height="13"/><rect x="302" y="249" width="104" height="13"/>
+      <rect x="249" y="106" width="13" height="104"/><rect x="249" y="302" width="13" height="104"/>
+      <circle cx="256" cy="256" r="20"/>
+    </g>
+  </svg>
+
+  <h1>CS2 연습 서버 참가</h1>
+  <p class="lead" id="lead">친구가 연 서버로 들어갑니다.</p>
+
+  <a class="go" id="go" href="#" hidden>게임 접속하기</a>
+  <p class="after" id="after" hidden>버튼을 누르면 Steam을 열지 묻습니다. 열기를 누르면 CS2가 켜지면서 바로 들어갑니다.</p>
+
+  <div class="card" id="mobile" hidden>
+    <h2>PC에서 열어 주세요</h2>
+    <p>CS2는 PC 게임이라 휴대폰에서는 들어갈 수 없습니다. 아래 주소를 복사해 게임이 설치된 PC에서 열어 주세요.</p>
+    <code id="pageUrl"></code>
+    <button class="copy" data-copy="pageUrl">주소 복사</button>
+  </div>
+
+  <div class="card" id="fallback" hidden>
+    <h2>버튼이 안 되면</h2>
+    <p>CS2를 먼저 켠 다음, 게임 안에서 <b>~</b> 키로 콘솔을 열고 아래를 붙여넣으세요. (설정 → 게임 → 개발자 콘솔 사용을 「예」로 두어야 콘솔이 열립니다)</p>
+    <code id="consoleCmd"></code>
+    <button class="copy" data-copy="consoleCmd">콘솔 명령 복사</button>
+  </div>
+
+  <div class="card" id="noAddress" hidden>
+    <h2>주소가 없습니다</h2>
+    <p>이 페이지는 친구가 보내 준 참가 링크로 열어야 합니다. 링크를 다시 받아 주세요.</p>
+    <p>서버를 여는 쪽이라면 CS2 Practice Host 앱의 「참가 링크 복사」 버튼으로 링크를 만들 수 있습니다.</p>
+  </div>
+
+  <p class="warn" id="warn" hidden>※ 주소를 아는 사람은 누구나 들어올 수 있습니다. 공개된 곳에 올리지 마세요.</p>
+
+  <footer>
+    CS2 Practice Host · 비공식 도구로, Valve 및 Counter-Strike와 무관합니다.
+  </footer>
+</main>
+
+<script>
+(function () {
+  var APP_ID = 730;
+
+  // 주소는 [A:1:1509803029:51596] 형태. 링크로 오갈 때 대괄호가 떨어지기도 해서 양쪽 다 받는다.
+  function readAddress() {
+    var raw = new URLSearchParams(location.search).get("a");
+    if (!raw) return null;
+
+    var inner = raw.trim().replace(/^\[|\]$/g, "");
+    return /^A:\d+:\d+:\d+$/.test(inner) ? "[" + inner + "]" : null;
+  }
+
+  function show(id) { document.getElementById(id).hidden = false; }
+
+  function bindCopy() {
+    var buttons = document.querySelectorAll("button.copy");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener("click", function () {
+        var text = document.getElementById(this.dataset.copy).textContent;
+        var label = this;
+        var done = function () {
+          var was = label.textContent;
+          label.textContent = "복사됐습니다";
+          setTimeout(function () { label.textContent = was; }, 1500);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
+        else done();
+      });
+    }
+  }
+
+  var address = readAddress();
+  bindCopy();
+
+  if (!address) {
+    document.getElementById("lead").textContent = "참가 링크가 올바르지 않습니다.";
+    show("noAddress");
+    return;
+  }
+
+  document.getElementById("consoleCmd").textContent = "connect " + address;
+  document.getElementById("pageUrl").textContent = location.href;
+  show("warn");
+
+  // CS2는 PC 전용이라 휴대폰에서는 접속 버튼이 의미가 없다. 카카오톡은 폰에서 보는 사람이 많다.
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    document.getElementById("lead").textContent = "PC에서 열어야 들어갈 수 있습니다.";
+    show("mobile");
+    show("fallback");
+    return;
+  }
+
+  var go = document.getElementById("go");
+  go.href = "steam://rungameid/" + APP_ID + "//+connect " + address;
+  show("go");
+  show("after");
+  show("fallback");
+})();
+</script>
+</body>
+</html>
