@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS2 Practice Host — 친구와 CS2 연습 서버 열기</title>
+<meta name="description" content="CS2에서 파티로 연습 게임을 시작하면 친구가 튕기는 문제를 우회하는 Windows 도구. 버튼 하나로 서버를 열고 참가 링크를 보냅니다.">
+<meta property="og:title" content="CS2 Practice Host">
+<meta property="og:description" content="친구와 CS2 연습 서버를 여는 Windows 도구. 친구는 링크만 누르면 들어옵니다.">
+<meta property="og:image" content="https://cs2.logstone.net/icon-512.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="/icon-512.png">
+<style>
+  :root {
+    --bg-top: #1e364d;
+    --bg-bottom: #0c1723;
+    --gold: #f2b233;
+    --blue: #5b9bd5;
+    --text: #e8edf3;
+    --muted: #9bacbf;
+    --card: rgba(255, 255, 255, 0.05);
+    --line: rgba(255, 255, 255, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 16px 56px;
+    background: linear-gradient(170deg, var(--bg-top), var(--bg-bottom)) fixed;
+    color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 680px; margin: 0 auto; }
+
+  header { padding: 56px 0 8px; text-align: center; }
+  header img { width: 88px; height: 88px; }
+  h1 { margin: 16px 0 6px; font-size: 30px; }
+  .tagline { margin: 0 0 28px; color: var(--muted); }
+
+  .get {
+    display: inline-block;
+    padding: 15px 34px;
+    border-radius: 11px;
+    background: var(--gold);
+    color: #23180a;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .get:hover { background: #ffc44d; }
+  .get-note { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+
+  h2 {
+    margin: 48px 0 12px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    font-size: 21px;
+    color: var(--blue);
+  }
+  h3 { margin: 26px 0 6px; font-size: 16px; }
+  p, li { color: #cfd9e4; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 5px 0; }
+  strong { color: var(--gold); font-weight: 600; }
+
+  .card {
+    margin: 18px 0;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+  }
+  .card p:first-child { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .cols { display: flex; flex-wrap: wrap; gap: 18px; }
+  .cols > div { flex: 1 1 260px; }
+
+  code {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--gold);
+    font-family: Consolas, "D2Coding", monospace;
+    font-size: 13px;
+  }
+  a { color: var(--blue); }
+
+  footer {
+    max-width: 680px;
+    margin: 56px auto 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: #6d7d90;
+    text-align: center;
+  }
+  .ad { margin: 44px auto 0; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <img src="/icon-512.png" alt="">
+  <h1>CS2 Practice Host</h1>
+  <p class="tagline">친구와 CS2 연습 서버를 여는 Windows 도구</p>
+  <a class="get" href="https://github.com/kimlog0415/cs2-practice-host/releases/latest/download/CS2PracticeHost.exe">다운로드</a>
+  <p class="get-note">
+    설치 없이 실행되는 파일 하나 (83KB) · Windows 10 / 11<br>
+    <a href="https://github.com/kimlog0415/cs2-practice-host">소스 보기</a> ·
+    <a href="https://github.com/kimlog0415/cs2-practice-host/releases/latest">변경 내역</a>
+  </p>
+</header>
+
+<h2>왜 친구가 못 들어오나</h2>
+
+<p>파티로 친구를 모아 <strong>플레이 → 연습</strong>을 시작하면, 방장만 들어가고 친구들은 「게임 서버와 연결할 수 없습니다」로 튕기는 일이 있습니다.</p>
+
+<p>타이밍 문제입니다. 방장이 시작을 누르면 CS2가 친구들에게 접속하라는 신호를 보내는데, 방장의 서버가 Steam에 등록되어 주소를 받기까지 1~2초가 걸립니다. 친구가 그 전에 신호를 받으면 <strong>빈 주소로 접속을 시도</strong>하고, 10초 뒤 타임아웃된 다음 다시 시도하지 않습니다.</p>
+
+<p>어떤 판은 되고 어떤 판은 안 되는 이유가 이것입니다. 방화벽이나 공유기, 포트 설정과는 무관합니다.</p>
+
+<p>이 도구는 대기실을 거치지 않습니다. 서버를 먼저 완전히 띄운 다음, 접속할 수 있는 주소를 친구에게 건넵니다.</p>
+
+<h2>쓰는 법</h2>
+
+<div class="cols">
+  <div>
+    <h3>방장</h3>
+    <ol>
+      <li>앱을 켜고 모드·맵·봇을 고릅니다. 고르는 즉시 저장됩니다.</li>
+      <li><strong>▶ 버튼</strong>을 누릅니다. CS2가 켜지면서 서버가 열립니다.</li>
+      <li>서버가 열리면 <strong>참가 링크가 자동으로 복사</strong>됩니다. 친구에게 보내세요.</li>
+      <li>게임 안에서 <strong>F10</strong>을 누르면 맵·모드를 바꿉니다. 들어와 있는 친구들은 그대로 남습니다.</li>
+    </ol>
+  </div>
+  <div>
+    <h3>친구</h3>
+    <ol>
+      <li>받은 링크를 누릅니다.</li>
+      <li>열린 페이지에서 <strong>게임 접속하기</strong>를 누릅니다.</li>
+      <li>CS2가 켜지면서 서버로 들어갑니다.</li>
+    </ol>
+    <p>설치할 것도, 개발자 콘솔을 켤 필요도 없습니다.</p>
+  </div>
+</div>
+
+<div class="card">
+  <p><strong>CS2는 반드시 앱의 ▶ 버튼으로 켜 주세요.</strong></p>
+  <p>Steam에서 직접 켜면 앱이 서버 주소를 읽지 못합니다. 주소를 읽는 데 필요한 설정이 앱이 켤 때만 붙기 때문입니다. 이 상태가 되면 앱 위쪽 띠가 노란색으로 바뀌어 알려 줍니다.</p>
+</div>
+
+<h2>알아두실 것</h2>
+
+<ul>
+  <li><strong>방장이 메뉴로 나가면 서버가 닫힙니다.</strong> 친구들도 모두 끊깁니다. 서버가 방장의 게임 안에서 돌기 때문입니다. 맵이나 모드를 바꿀 때는 게임에서 나가지 말고 F10을 쓰세요.</li>
+  <li><strong>봇을 한쪽 팀으로만 몰면 「사람 수 + 2」에서 멈춥니다.</strong> 한 팀이 상대보다 2명 넘게 많아질 수 없다는 게임 규칙 때문입니다. 고른 수만큼 다 넣으려면 봇 팀을 「양쪽에 섞기」로 두세요.</li>
+  <li><strong>봇 설정은 맵을 새로 열 때 반영됩니다.</strong> 게임 도중에 바꾸면 그 판에는 변화가 없습니다. F10으로 맵을 바꾸면 새 설정으로 들어옵니다.</li>
+  <li><strong>주소를 아는 사람은 누구나 들어올 수 있습니다.</strong> 공개된 곳에 올리지 말고 친구에게만 보내세요.</li>
+  <li><strong>연습용입니다.</strong> 매치메이킹이나 프리미어 같은 공식 경기와는 무관합니다.</li>
+</ul>
+
+<h2>자주 묻는 것</h2>
+
+<h3>Windows가 경고를 띄웁니다</h3>
+<p>코드 서명이 없어서 그렇습니다. 「추가 정보」 → 「실행」으로 진행하실 수 있습니다. 대신 <a href="https://github.com/kimlog0415/cs2-practice-host">소스를 공개</a>해 두었고, 릴리스 페이지에 파일의 SHA256 값을 함께 올립니다.</p>
+
+<h3>계정이 제재받지 않나요</h3>
+<p>이 앱은 게임 메모리를 읽거나 쓰지 않고, 키 입력이나 마우스를 조작하지 않으며, 게임 파일을 고치지 않습니다. 쓰는 것은 공식 콘솔 명령과 설정 파일, 실행 인자, 그리고 게임이 남기는 로그를 읽는 것뿐입니다.</p>
+
+<h3>F10을 이미 다른 데 쓰고 있는데요</h3>
+<p>이 앱이 F10을 맵 바꾸기로 다시 지정합니다. 기존 설정은 덮어씌워집니다. 되돌리려면 게임 콘솔에서 <code>unbind F10</code> 후 원하는 명령을 다시 지정하면 됩니다.</p>
+
+<h3>링크를 보냈는데 친구가 못 누릅니다</h3>
+<p>메신저가 링크로 만들어 주지 않았을 수 있습니다. 그럴 때는 앱의 「콘솔용 주소 복사」로 주소만 보내 주세요. 친구는 링크로 열린 페이지의 입력칸에 그 주소를 붙여넣어도 들어올 수 있습니다.</p>
+
+<h3>친구가 휴대폰으로 링크를 눌렀습니다</h3>
+<p>CS2는 PC 게임이라 휴대폰에서는 들어갈 수 없습니다. 페이지가 그 경우를 알아보고 PC에서 열라고 안내합니다.</p>
+
+<h3>이 앱이 제 PC에 무엇을 만드나요</h3>
+<p>CS2의 cfg 폴더에 설정 파일 몇 개(<code>cs2host_change.cfg</code>, <code>cs2host_bind.cfg</code>, <code>gamemode_*_server.cfg</code>)를 만듭니다. 전부 첫 줄에 이 앱이 만들었다는 표시가 들어가고, 표시가 없는 파일은 건드리지 않습니다. 앱 설정은 <code>%APPDATA%\CS2PracticeHost</code>에 저장됩니다.</p>
+
+</main>
+
+<div class="ad" id="ad"></div>
+
+<footer>
+  CS2 Practice Host · 만든 곳 <a href="https://logstone.net">LOGSTONE</a><br>
+  Valve Corporation 및 Counter-Strike와 무관한 비공식 도구입니다.
+</footer>
+
+<script>
+(function () {
+  // 가로 배너는 728px이라 좁은 창에서는 가로 스크롤이 생긴다. 창이 좁으면 띠 배너로.
+  var narrow = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 780;
+  var box = document.getElementById("ad");
+
+  var slot = document.createElement("ins");
+  slot.className = "kakao_ad_area";
+  slot.style.display = "none";
+  slot.setAttribute("data-ad-unit", narrow ? "DAN-Q8GrhJXOYM20Xt9L" : "DAN-UCZfQB44XBmtgdrY");
+  slot.setAttribute("data-ad-width", narrow ? "320" : "728");
+  slot.setAttribute("data-ad-height", narrow ? "50" : "90");
+  box.appendChild(slot);
+
+  var loader = document.createElement("script");
+  loader.src = "https://t1.kakaocdn.net/kas/static/ba.min.js";
+  loader.async = true;
+  box.appendChild(loader);
+})();
+</script>
+</body>
+</html>

@@ -444,32 +444,17 @@ namespace CS2PracticeHost
             MessageBox.Show(text, Program.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        /// <summary>사용법은 웹에 둔다. 설명이 바뀔 때마다 앱을 다시 내보내지 않아도 된다.</summary>
+        private const string HelpUrl = "https://cs2.logstone.net/";
+
         private void OnHelpClick(object sender, EventArgs e)
         {
-            Tell(
-                "[ 방장 ]\n" +
-                "1. 모드·맵·봇을 고릅니다 (고르는 즉시 저장돼요)\n" +
-                "2. ▶ 버튼을 누르면 CS2가 켜지면서 서버가 열려요\n" +
-                "3. 참가 링크가 자동으로 복사돼요. 친구에게 보내세요\n" +
-                "4. 맵 안에서 F10을 누르면 맵·모드를 바꿔요\n" +
-                "    (들어와 있는 친구들은 그대로 남아요)\n\n" +
-
-                "[ 친구 ]\n" +
-                "받은 링크를 누르고 [게임 접속하기]를 누르면 끝이에요.\n" +
-                "설치할 것도, 콘솔을 켤 필요도 없어요.\n\n" +
-
-                "[ 꼭 알아두세요 ]\n" +
-                "· CS2는 반드시 ▶ 버튼으로 켜세요.\n" +
-                "   Steam에서 직접 켜면 서버 주소를 읽지 못해요.\n" +
-                "· 방장이 메뉴로 나가면 서버가 닫히고 친구들이 끊겨요.\n" +
-                "· 봇을 한 팀으로 몰면 「사람 수 + 2」까지만 나와요.\n" +
-                "· 봇 설정은 맵을 새로 열 때 반영돼요.\n" +
-                "· 이 앱은 게임에 설정 파일을 만들고 F10 키를 다시 지정해요.\n" +
-                "· 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
-                "   공개된 곳에 올리지 말고 친구에게만 보내세요.\n\n" +
-
-                "자세한 설명과 소스\n" +
-                "github.com/kimlog0415/cs2-practice-host");
+            try { Process.Start(HelpUrl); }
+            catch (Exception)
+            {
+                CopyToClipboard(HelpUrl);
+                Tell("사용법 페이지를 열지 못했어요.\n주소를 복사했으니 브라우저에 붙여넣어 주세요.\n\n" + HelpUrl);
+            }
         }
     }
 }
