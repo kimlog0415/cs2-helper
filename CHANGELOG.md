@@ -2,11 +2,11 @@
 
 ## 1.0.2 (2026-10-02)
 
-- 켤 때 새 버전이 나왔는지 확인해 알려 줍니다. 알아서 받지는 않고, 창 아래에 뜨는 안내를 누르면 받는 곳으로 갑니다. 보내는 정보는 없고 받는 것은 버전 번호뿐이며, 인터넷이 없으면 조용히 넘어갑니다.
+- 켤 때 새 버전이 나왔는지 확인해 알려 줍니다.
 
 ---
 
-- Checks for a newer version at startup and tells you. It never downloads on its own — the notice at the bottom takes you to the download page. Nothing is sent, only a version number is read, and it stays quiet when there is no connection.
+- Checks for a newer version at startup and tells you.
 
 ---
 
