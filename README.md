@@ -6,7 +6,7 @@
 
 친구와 CS2 연습 서버를 여는 Windows 도구
 
-[다운로드](https://github.com/kimlog0415/cs2-practice-host/releases/latest) · [변경 내역](CHANGELOG.md)
+[다운로드](https://github.com/kimlog0415/cs2-practice-host/releases/latest) · [사용법](https://cs2.logstone.net/) · [변경 내역](CHANGELOG.md)
 
 </div>
 
@@ -55,14 +55,16 @@ CS2는 반드시 이 앱의 ▶ 버튼으로 켜 주세요. Steam에서 직접 �
 - Steam을 실행 인자와 함께 실행합니다(`-applaunch 730 -condebug +exec ... +map ...`).
 - CS2가 남기는 `console.log`를 읽어 서버 주소를 찾습니다.
 - 실행 중인 cs2.exe가 이 앱으로 켠 것인지 확인합니다.
+- 서버 주소를 클립보드에 복사합니다. 다른 프로그램이 클립보드를 잡고 있으면 복사하지 못했다고 알려 줍니다.
 - 설정을 `%APPDATA%\CS2PracticeHost\settings.json`에 저장합니다.
+- `?` 버튼을 누르면 기본 브라우저로 [사용법 페이지](https://cs2.logstone.net/)를 엽니다.
 
 하지 않는 일
 
 - 게임 메모리를 읽거나 쓰지 않습니다.
 - 키 입력이나 마우스를 조작하지 않습니다.
 - 게임 파일을 고치지 않습니다.
-- 어떤 정보도 외부로 보내지 않습니다. 앱에는 네트워크 통신 코드가 없습니다.
+- 어떤 정보도 보내지 않습니다. 앱이 직접 주고받는 네트워크 통신이 없습니다. 바깥으로 나가는 것은 `?` 버튼으로 브라우저를 여는 것뿐이고, 그때도 넘기는 정보는 없습니다.
 
 공식 콘솔 명령, cfg 파일, 실행 인자, 로그 읽기만 사용합니다.
 
@@ -100,9 +102,9 @@ This tool skips the lobby. It opens the server first, then hands you a link to s
 
 **Notes** — if the host leaves to the main menu the server closes. Bots piled on one team cap at "humans + 2" due to a team size rule. Bot settings apply when a map is loaded. Anyone with the address can join, so share it privately.
 
-**What it does** — reads the Steam install path from the registry, writes config files into the CS2 cfg folder (marked as its own; never touches files it did not create), rebinds F10, launches Steam with arguments, reads `console.log` for the server address, stores settings in `%APPDATA%`.
+**What it does** — reads the Steam install path from the registry, writes config files into the CS2 cfg folder (marked as its own; never touches files it did not create), rebinds F10, launches Steam with arguments, reads `console.log` for the server address, copies that address to the clipboard (and says so when another program blocks it), stores settings in `%APPDATA%`, and opens the [usage page](https://cs2.logstone.net/) in your browser from the `?` button.
 
-**What it does not do** — no game memory access, no input simulation, no game file modification, no network calls of its own.
+**What it does not do** — no game memory access, no input simulation, no game file modification. It sends nothing: the app makes no network calls of its own, and the `?` button only opens a browser without passing anything along.
 
 Build with `dotnet build -c Release`. Targets .NET Framework 4.8 with no NuGet dependencies, so the output is a single exe.
 
