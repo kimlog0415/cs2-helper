@@ -18,7 +18,6 @@ namespace CS2PracticeHost
         public static string CfgDir { get { return Path.Combine(CsgoDir, "cfg"); } }
         public static string MapsDir { get { return Path.Combine(CsgoDir, "maps"); } }
         public static string ConsoleLog { get { return Path.Combine(CsgoDir, "console.log"); } }
-        public static string Cs2Exe { get { return Path.Combine(InstallDir, @"game\bin\win64\cs2.exe"); } }
 
         public static bool Found { get { return InstallDir != null && SteamExe != null; } }
 

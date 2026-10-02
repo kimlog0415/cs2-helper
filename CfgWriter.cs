@@ -14,32 +14,35 @@ namespace CS2PracticeHost
         private const string OldMarker = "// CS2 방장 도우미가 만든 파일";
 
         // 사용자의 기존 cfg와 겹치지 않도록 접두사를 붙인다
-        public const string HostCfg = "cs2host_host";
         public const string ChangeCfg = "cs2host_change";
         public const string BindCfg = "cs2host_bind";
+
+        /// <summary>F9가 쓰던 cfg. 키를 없애면서 안 쓰게 됐고, 남아 있으면 낡은 설정이 된다.</summary>
+        private const string RetiredHostCfg = "cs2host_host";
 
         private static readonly UTF8Encoding NoBom = new UTF8Encoding(false);
 
         public static void WriteMatchCfgs(GameMode mode, string mapId)
         {
-            Write(HostCfg, new[]
-            {
-                "game_type " + mode.Type, "game_mode " + mode.Mode, "map " + mapId
-            });
-
             // changelevel은 접속한 친구들을 유지한 채 맵만 바꾼다
             Write(ChangeCfg, new[]
             {
                 "game_type " + mode.Type, "game_mode " + mode.Mode, "changelevel " + mapId
             });
+
+            Delete(RetiredHostCfg);
         }
 
-        /// <summary>F9·F10 바인드. 실행 인자 +exec 로 불러서 사용자가 콘솔에 칠 필요가 없게 한다.</summary>
+        /// <summary>
+        /// F10 바인드. 실행 인자 +exec 로 불러서 사용자가 콘솔에 칠 필요가 없게 한다.
+        /// F9는 없앴다 — 서버를 새로 여는 키라 친구가 전부 끊기는데 F10과 생김새가 비슷해
+        /// 게임 중에 헷갈린다. 바인드는 CS2에 저장돼 남으므로 예전에 걸린 것을 직접 풀어 준다.
+        /// </summary>
         public static void WriteBindCfg()
         {
             Write(BindCfg, new[]
             {
-                "bind F9 \"exec " + HostCfg + "\"",
+                "unbind F9",
                 "bind F10 \"exec " + ChangeCfg + "\"",
             });
         }

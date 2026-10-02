@@ -23,14 +23,16 @@ namespace CS2PracticeHost
         private readonly Button _launch = new Button();
         private readonly Button _copyLink = new Button();
         private readonly Button _copyAddress = new Button();
-        private readonly Timer _watchServer = new Timer { Interval = 2000 };
-        private readonly Timer _watchProcess = new Timer { Interval = 3000 };
+        private readonly Timer _watch = new Timer { Interval = 2000 };
 
         private GameMap[] _maps = new GameMap[0];
-        private DateTime _launchedAt;
         private bool _loading = true;
 
-        /// <summary>이미 복사해 준 서버. 맵 안에서 F9로 연 서버도 이걸로 알아챈다.</summary>
+        /// <summary>▶로 서버를 여는 중. 이 동안은 진행 상황 문구를 유지하고 버튼을 잠근다.</summary>
+        private bool _launching;
+        private DateTime _launchedAt;
+
+        /// <summary>이미 복사해 준 서버. 맵 안에서 F10으로 연 서버도 이걸로 알아챈다.</summary>
         private string _copiedAddress;
 
         public MainForm(Settings settings)
@@ -44,9 +46,8 @@ namespace CS2PracticeHost
             CfgWriter.WriteBindCfg();
             SaveAll();
 
-            _watchServer.Tick += OnServerTick;
-            _watchProcess.Tick += (s, e) => UpdateBanner();
-            Shown += (s, e) => { UpdateBanner(); _watchProcess.Start(); };
+            _watch.Tick += (s, e) => RefreshStatus();
+            Shown += (s, e) => { RefreshStatus(); _watch.Start(); };
         }
 
         // ---------- 화면 ----------
@@ -209,18 +210,16 @@ namespace CS2PracticeHost
             _settings.Team = _team.Text;
             _settings.Save();
 
-            if (_watchServer.Enabled) return;   // 서버 여는 중에는 진행 상황 문구를 유지한다
+            if (_launching) return;   // 서버 여는 중에는 진행 상황 문구를 유지한다
 
             string note = mode.BotsConfigurable
                 ? OneSidedBotNote()
                 : "\n※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)";
 
-            // F10을 먼저 둔다 — 친구들이 들어온 뒤로는 이쪽이 기본이고, F9는 주소가 바뀌어 다 끊긴다
             _status.Text =
                 "저장됐어요!  (" + mode.Name + " / " + map.Name + ")" + note + "\n\n" +
                 "▶ 버튼 : CS2 켜고 서버 열기 (항상 이걸로 켜세요)\n" +
-                "F10 : (맵 안에서) 맵·모드 바꾸기 — 친구들 그대로\n" +
-                "F9  : (맵 안에서) 서버 새로 열기 — 친구들 끊김\n\n" +
+                "F10 : (맵 안에서) 맵·모드 바꾸기 — 친구들 그대로\n\n" +
                 "※ 봇 설정은 맵을 새로 열 때 반영돼요\n" +
                 "※ 방장이 메뉴로 나가면 서버가 닫혀요";
         }
@@ -242,45 +241,51 @@ namespace CS2PracticeHost
 
         // ---------- 상태 표시줄 ----------
 
-        private void UpdateBanner()
+        /// <summary>상태를 읽어 표시줄을 맞추고, 새 서버가 보이면 링크를 복사한다.</summary>
+        private void RefreshStatus()
         {
-            Process cs2 = Cs2Process.Find();
-            if (cs2 == null)
+            Cs2Status status = Cs2Watcher.Read();
+
+            _launch.Text = status.State == Cs2State.Off
+                ? "▶  CS2 켜고 서버 열기"
+                : "▶  CS2 다시 켜고 서버 열기";
+
+            switch (status.State)
             {
-                SetBanner(Color.Gainsboro, Color.DimGray, "○  CS2 꺼져 있음 · 아래 ▶ 버튼으로 시작");
-                _launch.Text = "▶  CS2 켜고 서버 열기";
-                return;
+                case Cs2State.Off:
+                    SetBanner(Color.Gainsboro, Color.DimGray, "○  CS2 꺼져 있음 · 아래 ▶ 버튼으로 시작");
+                    break;
+                case Cs2State.NoLog:
+                    SetBanner(Color.FromArgb(255, 243, 205), Color.DarkGoldenrod,
+                        "●  CS2 실행 중 · 주소를 읽으려면 ▶로 다시 켜기");
+                    break;
+                case Cs2State.NoServer:
+                    SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue,
+                        "●  CS2 실행 중 · 서버 없음 (메인 화면)");
+                    break;
+                case Cs2State.ServerOpen:
+                    SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
+                        "●  서버 열림 (" + status.Server.OpenedAt.ToString("HH:mm") + ") · 맵 안에서 F10");
+                    NoticeNewServer(status.Server);
+                    return;
             }
 
-            _launch.Text = "▶  CS2 다시 켜고 서버 열기";
-
-            if (!Cs2Process.HasCondebug(cs2))
+            if (_launching && (DateTime.Now - _launchedAt).TotalMinutes > 4)
             {
-                SetBanner(Color.FromArgb(255, 243, 205), Color.DarkGoldenrod,
-                    "●  CS2 실행 중 · 주소를 읽으려면 ▶로 다시 켜기");
-                return;
+                _launching = false;
+                _launch.Enabled = true;
+                _status.Text = "서버를 찾지 못했어요.\nCS2가 켜졌는지 확인하고 다시 눌러주세요.";
             }
-
-            ServerInfo opened = CurrentServer(cs2);
-            if (opened != null)
-            {
-                SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
-                    "●  서버 열림 (" + opened.OpenedAt.ToString("HH:mm") + ") · 맵 안에서 F9 / F10");
-                NoticeNewServer(opened);
-            }
-            else
-                SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue,
-                    "●  CS2 실행 중 · 서버 없음 (메인 화면)");
         }
 
-        /// <summary>처음 보는 서버면 링크를 복사해 알린다. ▶로 열었든 맵 안에서 F9로 열었든 같다.</summary>
+        /// <summary>처음 보는 서버면 링크를 복사해 알린다. ▶로 열었든 맵 안에서 F10으로 열었든 같다.</summary>
         private void NoticeNewServer(ServerInfo server)
         {
+            _launching = false;
+            _launch.Enabled = true;
+
             if (server.Address == _copiedAddress) return;
             _copiedAddress = server.Address;
-
-            _watchServer.Stop();
-            _launch.Enabled = true;
 
             CopyToClipboard(server.JoinLink);
             SystemSounds.Asterisk.Play();
@@ -308,12 +313,12 @@ namespace CS2PracticeHost
                 return;
             }
 
-            Process running = Cs2Process.Find();
-            if (running != null)
+            Cs2Status before = Cs2Watcher.Read();
+            if (before.State != Cs2State.Off)
             {
                 // 버튼에 "다시 켜고"라고 적혀 있으니 그대로 한다.
                 // 서버가 열려 있을 때만 묻는다 — 친구들이 들어와 있으면 말없이 끊으면 안 된다.
-                if (Cs2Process.HasCondebug(running) && CurrentServer(running) != null)
+                if (before.State == Cs2State.ServerOpen)
                 {
                     DialogResult answer = MessageBox.Show(
                         "지금 서버가 열려 있어요.\n\n" +
@@ -344,8 +349,8 @@ namespace CS2PracticeHost
             Process.Start(Cs2Paths.SteamExe, LaunchArguments(mode, map));
 
             _launchedAt = DateTime.Now;
+            _launching = true;
             _launch.Enabled = false;
-            _watchServer.Start();
             _status.Text =
                 "CS2 켜는 중...  (" + mode.Name + " / " + map.Name + ")\n\n" +
                 "서버가 열리면 친구에게 보낼 참가 링크가\n자동으로 복사돼요. (1분 정도 걸려요)";
@@ -359,18 +364,6 @@ namespace CS2PracticeHost
                    " +game_type " + mode.Type +
                    " +game_mode " + mode.Mode +
                    " +map " + map.Id;
-        }
-
-        private void OnServerTick(object sender, EventArgs e)
-        {
-            // 서버를 찾아 알리는 일은 상태 표시줄 쪽(NoticeNewServer)이 맡는다.
-            // 여기는 너무 오래 걸릴 때 포기하는 역할만 한다.
-            if ((DateTime.Now - _launchedAt).TotalMinutes > 4)
-            {
-                _watchServer.Stop();
-                _launch.Enabled = true;
-                _status.Text = "서버를 찾지 못했어요.\nCS2가 켜졌는지 확인하고 다시 눌러주세요.";
-            }
         }
 
         // ---------- 친구에게 보내기 ----------
@@ -409,32 +402,26 @@ namespace CS2PracticeHost
         /// <summary>지금 살아 있는 서버만 돌려준다. 죽은 주소를 친구에게 보내면 안 된다.</summary>
         private ServerInfo FindServer()
         {
-            Process cs2 = Cs2Process.Find();
-            if (cs2 == null)
+            Cs2Status status = Cs2Watcher.Read();
+            switch (status.State)
             {
-                Tell("CS2가 꺼져 있어요.\n▶ 버튼으로 서버를 열어주세요.");
-                return null;
+                case Cs2State.Off:
+                    Tell("CS2가 꺼져 있어요.\n▶ 버튼으로 서버를 열어주세요.");
+                    return null;
+
+                case Cs2State.NoLog:
+                    Tell("이 CS2는 앱으로 켠 게 아니라 주소를 읽을 수 없어요.\n\n" +
+                         "▶ 버튼으로 다시 켜주세요.");
+                    return null;
+
+                // F10은 맵을 바꾸는 키라 서버가 돌고 있어야 먹는다. 여기선 ▶ 말고 길이 없다.
+                case Cs2State.NoServer:
+                    Tell("열려 있는 서버가 없어요.\n\n▶ 버튼으로 서버를 열어주세요.");
+                    return null;
+
+                default:
+                    return status.Server;
             }
-
-            if (!Cs2Process.HasCondebug(cs2))
-            {
-                Tell("이 CS2는 앱으로 켠 게 아니라 주소를 읽을 수 없어요.\n\n" +
-                     "▶ 버튼으로 다시 켜주세요.");
-                return null;
-            }
-
-            ServerInfo server = CurrentServer(cs2);
-            if (server == null)
-                Tell("열려 있는 서버가 없어요.\n\n" +
-                     "▶ 버튼으로 서버를 열거나,\n맵 안에서 F9를 눌러주세요.");
-
-            return server;
-        }
-
-        private static ServerInfo CurrentServer(Process cs2)
-        {
-            try { return ConsoleLog.CurrentServer(cs2.StartTime.AddSeconds(-5)); }
-            catch (Exception) { return null; }
         }
 
         private static void CopyToClipboard(string text)
