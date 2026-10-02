@@ -10,15 +10,14 @@
 
 ---
 
-
 ## 1.0.1 (2026-10-02)
 
-- 서버가 열렸는데 참가 링크가 클립보드에 복사되지 않던 문제를 고쳤습니다. 서버가 열리는 순간은 게임이 화면 앞에 있어 복사가 막히는 일이 있었습니다. 이제 잠시 다시 시도하고, 그래도 막히면 복사하지 못했다고 알려 드립니다. 전에는 복사되지 않았는데도 복사됐다고 표시했습니다.
+- 서버가 열렸는데 참가 링크가 복사되지 않던 문제를 고쳤습니다. 복사하지 못하면 이제 그렇게 알려 드립니다.
 - `?` 버튼이 생겼습니다. 누르면 사용법 페이지가 열립니다.
 
 ---
 
-- Fixed the join link not reaching the clipboard when a server opened. The game is in front at that moment, which can block the copy. The app now retries briefly and tells you when it still fails — previously it claimed success either way.
+- Fixed the join link not reaching the clipboard when a server opened. It now says so when the copy fails.
 - Added a `?` button that opens the usage page.
 
 ---
