@@ -296,11 +296,10 @@ namespace CS2PracticeHost
             if (server.Address == _copiedAddress) return;
             _copiedAddress = server.Address;
 
-            CopyToClipboard(server.JoinLink);
             SystemSounds.Asterisk.Play();
-            _status.Text =
-                "서버가 열렸어요! 참가 링크가 복사됐어요.\n" +
-                "카톡/디스코드에 Ctrl+V 로 보내세요.\n" +
+            _status.Text = (CopyToClipboard(server.JoinLink)
+                    ? "서버가 열렸어요! 참가 링크가 복사됐어요.\n카톡/디스코드에 Ctrl+V 로 보내세요.\n"
+                    : "서버가 열렸어요!\n복사가 막혀서 아래 [참가 링크 복사]를 눌러주세요.\n") +
                 "친구가 누르면 안내 페이지를 거쳐 바로 들어와요.\n\n" +
                 server.JoinLink;
         }
@@ -382,8 +381,9 @@ namespace CS2PracticeHost
             ServerInfo server = FindServer();
             if (server == null) return;
 
-            CopyToClipboard(server.JoinLink);
-            Tell("참가 링크가 복사됐어요!\n카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n" +
+            Tell((CopyToClipboard(server.JoinLink)
+                     ? "참가 링크가 복사됐어요!\n카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n"
+                     : "복사가 막혔어요. 아래 주소를 직접 옮겨 주세요.\n\n") +
                  server.JoinLink + "\n\n" +
                  "친구가 링크를 누르면 안내 페이지가 열리고,\n" +
                  "거기서 [게임 접속하기]를 누르면 바로 들어와요.\n" +
@@ -396,8 +396,9 @@ namespace CS2PracticeHost
             ServerInfo server = FindServer();
             if (server == null) return;
 
-            CopyToClipboard(server.ConnectCommand);
-            Tell("콘솔용 주소가 복사됐어요.\n\n" +
+            Tell((CopyToClipboard(server.ConnectCommand)
+                     ? "콘솔용 주소가 복사됐어요.\n\n"
+                     : "복사가 막혔어요. 아래 주소를 직접 옮겨 주세요.\n\n") +
                  server.ConnectCommand + "\n\n" +
                  "친구가 게임 콘솔(~ 키)에 붙여넣는 방식이에요.\n" +
                  "보통은 [참가 링크 복사] 쪽이 더 편해요.\n\n" +
@@ -433,10 +434,19 @@ namespace CS2PracticeHost
             }
         }
 
-        private static void CopyToClipboard(string text)
+        /// <summary>
+        /// Windows는 클립보드를 한 번에 한 프로그램만 잡는다. 서버가 열리는 순간은 CS2가
+        /// 전면이라 배경에 있는 우리가 쓰려 하면 거부당한다. 그래서 몇 번 다시 시도하고,
+        /// 그래도 안 되면 실패를 알린다 — 조용히 삼키면 복사된 줄 알고 엉뚱한 걸 붙여넣는다.
+        /// </summary>
+        private static bool CopyToClipboard(string text)
         {
-            try { Clipboard.SetText(text); }
-            catch (Exception) { /* 다른 프로그램이 클립보드를 잡고 있을 수 있다 */ }
+            try
+            {
+                Clipboard.SetDataObject(text, true, 20, 100);
+                return true;
+            }
+            catch (Exception) { return false; }
         }
 
         private void Tell(string text)
