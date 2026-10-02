@@ -23,6 +23,7 @@
     margin: 0;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
@@ -99,6 +100,9 @@
   .err { margin: 10px 0 0; color: #e8825a; }
 
   .warn { margin-top: 20px; font-size: 13px; color: var(--muted); text-align: center; }
+
+  /* 접속 버튼보다 아래, 본문 칼럼 바깥. 들어가는 길을 가리지 않게 한다 */
+  .ad { margin-top: 32px; text-align: center; }
   footer { margin-top: 28px; font-size: 12px; color: #6d7d90; text-align: center; }
   footer a { color: #8fa3b8; }
   [hidden] { display: none !important; }
@@ -153,6 +157,8 @@
   </footer>
 </main>
 
+<div class="ad" id="ad"></div>
+
 <script>
 (function () {
   var APP_ID = 730;
@@ -168,6 +174,29 @@
 
   function show(id) { document.getElementById(id).hidden = false; }
   function hide(id) { document.getElementById(id).hidden = true; }
+
+  // CS2는 PC 전용이라 휴대폰에서는 접속 버튼이 의미가 없다. 카카오톡은 폰에서 보는 사람이 많다.
+  function onPhone() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
+
+  // 가로 배너는 728px이라 좁은 창에서는 가로 스크롤이 생긴다. 창이 좁으면 띠 배너로.
+  function showAd() {
+    var narrow = onPhone() || window.innerWidth < 780;
+    var unit = narrow ? "DAN-Q8GrhJXOYM20Xt9L" : "DAN-UCZfQB44XBmtgdrY";
+    var box = document.getElementById("ad");
+
+    var slot = document.createElement("ins");
+    slot.className = "kakao_ad_area";
+    slot.style.display = "none";
+    slot.setAttribute("data-ad-unit", unit);
+    slot.setAttribute("data-ad-width", narrow ? "320" : "728");
+    slot.setAttribute("data-ad-height", narrow ? "50" : "90");
+    box.appendChild(slot);
+
+    var loader = document.createElement("script");
+    loader.src = "https://t1.kakaocdn.net/kas/static/ba.min.js";
+    loader.async = true;
+    box.appendChild(loader);
+  }
 
   function bindCopy() {
     var buttons = document.querySelectorAll("button.copy");
@@ -192,8 +221,7 @@
     document.getElementById("pageUrl").textContent = location.href;
     show("warn");
 
-    // CS2는 PC 전용이라 휴대폰에서는 접속 버튼이 의미가 없다. 카카오톡은 폰에서 보는 사람이 많다.
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    if (onPhone()) {
       document.getElementById("lead").textContent = "PC에서 열어야 들어갈 수 있습니다.";
       show("mobile");
       show("fallback");
@@ -222,6 +250,7 @@
 
   bindCopy();
   bindManualEntry();
+  showAd();
 
   var address = normalize(new URLSearchParams(location.search).get("a"));
   if (address) {
