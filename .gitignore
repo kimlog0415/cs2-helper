@@ -2,6 +2,7 @@
 bin/
 obj/
 publish/
+__pycache__/
 
 # 내부 문서 — 로컬에만 둔다 (세션 운영 규칙·개인 PC 경로·가족 서술 포함)
 CLAUDE.md
