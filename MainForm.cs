@@ -20,6 +20,7 @@ namespace CS2PracticeHost
         private readonly ComboBox _bots = new ComboBox();
         private readonly ComboBox _level = new ComboBox();
         private readonly ComboBox _team = new ComboBox();
+        private readonly Button _help = new Button();
         private readonly Button _launch = new Button();
         private readonly Button _copyLink = new Button();
         private readonly Button _copyAddress = new Button();
@@ -66,11 +67,19 @@ namespace CS2PracticeHost
             catch (Exception) { }
 
             _banner.Location = new Point(20, 14);
-            _banner.Size = new Size(340, 32);
+            _banner.Size = new Size(304, 32);
             _banner.TextAlign = ContentAlignment.MiddleLeft;
             _banner.Padding = new Padding(8, 0, 0, 0);
             _banner.Font = new Font("맑은 고딕", 10, FontStyle.Bold);
             Controls.Add(_banner);
+
+            _help.Text = "?";
+            _help.Font = new Font("맑은 고딕", 11, FontStyle.Bold);
+            _help.Location = new Point(328, 14);
+            _help.Size = new Size(32, 32);
+            _help.TabStop = false;
+            _help.Click += OnHelpClick;
+            Controls.Add(_help);
 
             int y = 62;
             AddRow("모드", _mode, ref y);
@@ -433,6 +442,34 @@ namespace CS2PracticeHost
         private void Tell(string text)
         {
             MessageBox.Show(text, Program.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void OnHelpClick(object sender, EventArgs e)
+        {
+            Tell(
+                "[ 방장 ]\n" +
+                "1. 모드·맵·봇을 고릅니다 (고르는 즉시 저장돼요)\n" +
+                "2. ▶ 버튼을 누르면 CS2가 켜지면서 서버가 열려요\n" +
+                "3. 참가 링크가 자동으로 복사돼요. 친구에게 보내세요\n" +
+                "4. 맵 안에서 F10을 누르면 맵·모드를 바꿔요\n" +
+                "    (들어와 있는 친구들은 그대로 남아요)\n\n" +
+
+                "[ 친구 ]\n" +
+                "받은 링크를 누르고 [게임 접속하기]를 누르면 끝이에요.\n" +
+                "설치할 것도, 콘솔을 켤 필요도 없어요.\n\n" +
+
+                "[ 꼭 알아두세요 ]\n" +
+                "· CS2는 반드시 ▶ 버튼으로 켜세요.\n" +
+                "   Steam에서 직접 켜면 서버 주소를 읽지 못해요.\n" +
+                "· 방장이 메뉴로 나가면 서버가 닫히고 친구들이 끊겨요.\n" +
+                "· 봇을 한 팀으로 몰면 「사람 수 + 2」까지만 나와요.\n" +
+                "· 봇 설정은 맵을 새로 열 때 반영돼요.\n" +
+                "· 이 앱은 게임에 설정 파일을 만들고 F10 키를 다시 지정해요.\n" +
+                "· 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
+                "   공개된 곳에 올리지 말고 친구에게만 보내세요.\n\n" +
+
+                "자세한 설명과 소스\n" +
+                "github.com/kimlog0415/cs2-practice-host");
         }
     }
 }
