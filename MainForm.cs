@@ -24,6 +24,7 @@ namespace CS2PracticeHost
         private readonly Button _launch = new Button();
         private readonly Button _copyLink = new Button();
         private readonly Button _copyAddress = new Button();
+        private readonly LinkLabel _update = new LinkLabel();
         private readonly Timer _watch = new Timer { Interval = 2000 };
 
         private GameMap[] _maps = new GameMap[0];
@@ -48,7 +49,7 @@ namespace CS2PracticeHost
             SaveAll();
 
             _watch.Tick += (s, e) => RefreshStatus();
-            Shown += (s, e) => { RefreshStatus(); _watch.Start(); };
+            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); };
         }
 
         // ---------- 화면 ----------
@@ -111,6 +112,14 @@ namespace CS2PracticeHost
             _copyAddress.Size = new Size(340, 32);
             _copyAddress.Click += OnCopyAddressClick;
             Controls.Add(_copyAddress);
+
+            // 새 버전이 있을 때만 보인다. 그때 창이 그만큼 늘어난다
+            _update.Location = new Point(20, 604);
+            _update.Size = new Size(340, 22);
+            _update.TextAlign = ContentAlignment.MiddleCenter;
+            _update.Visible = false;
+            _update.LinkClicked += (s, e) => OpenInBrowser(UpdateCheck.DownloadPage);
+            Controls.Add(_update);
         }
 
         private void AddRow(string label, ComboBox box, ref int y)
@@ -456,6 +465,27 @@ namespace CS2PracticeHost
 
         /// <summary>사용법은 웹에 둔다. 설명이 바뀔 때마다 앱을 다시 내보내지 않아도 된다.</summary>
         private const string HelpUrl = "https://cs2.logstone.net/";
+
+        /// <summary>확인은 네트워크를 타므로 화면이 멈추지 않게 뒤에서 돌린다.</summary>
+        private async void ShowUpdateIfAny()
+        {
+            string newer = await Task.Run(() => UpdateCheck.NewerVersion());
+            if (newer == null || IsDisposed) return;
+
+            _update.Text = "새 버전 " + newer + " 이 나왔어요 — 받으러 가기";
+            _update.Visible = true;
+            ClientSize = new Size(ClientSize.Width, 642);
+        }
+
+        private void OpenInBrowser(string url)
+        {
+            try { Process.Start(url); }
+            catch (Exception)
+            {
+                CopyToClipboard(url);
+                Tell("페이지를 열지 못했어요.\n주소를 복사했으니 브라우저에 붙여넣어 주세요.\n\n" + url);
+            }
+        }
 
         private void OnHelpClick(object sender, EventArgs e)
         {

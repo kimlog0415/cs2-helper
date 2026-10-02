@@ -1,5 +1,16 @@
 # 변경 내역 / Changelog
 
+## 1.0.2 (2026-10-02)
+
+- 켤 때 새 버전이 나왔는지 확인해 알려 줍니다. 알아서 받지는 않고, 창 아래에 뜨는 안내를 누르면 받는 곳으로 갑니다. 보내는 정보는 없고 받는 것은 버전 번호뿐이며, 인터넷이 없으면 조용히 넘어갑니다.
+
+---
+
+- Checks for a newer version at startup and tells you. It never downloads on its own — the notice at the bottom takes you to the download page. Nothing is sent, only a version number is read, and it stays quiet when there is no connection.
+
+---
+
+
 ## 1.0.1 (2026-10-02)
 
 - 서버가 열렸는데 참가 링크가 클립보드에 복사되지 않던 문제를 고쳤습니다. 서버가 열리는 순간은 게임이 화면 앞에 있어 복사가 막히는 일이 있었습니다. 이제 잠시 다시 시도하고, 그래도 막히면 복사하지 못했다고 알려 드립니다. 전에는 복사되지 않았는데도 복사됐다고 표시했습니다.
