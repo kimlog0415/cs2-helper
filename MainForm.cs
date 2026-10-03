@@ -200,7 +200,12 @@ namespace CS2PracticeHost
 
             _bots.SelectedIndex = _settings.Bots >= 0 && _settings.Bots < _bots.Items.Count
                 ? _settings.Bots : 0;
-            _level.SelectedIndex = Math.Max(1, GameData.IndexOfLevel(_settings.Level));
+
+            // 난이도만 기본값이 첫 칸이 아니다. Math.Max로 받으면 제대로 찾은 0(쉬움)까지
+            // 1(보통)로 끌어올려, 쉬움을 골라 둔 사람이 다시 켤 때마다 보통으로 돌아간다
+            int level = GameData.IndexOfLevel(_settings.Level);
+            _level.SelectedIndex = level >= 0 ? level : 1;
+
             _team.SelectedIndex = Math.Max(0, GameData.IndexOfTeam(_settings.Team));
         }
 

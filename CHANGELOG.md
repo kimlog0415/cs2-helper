@@ -4,11 +4,13 @@
 
 - 영어를 지원합니다. 오른쪽 위 `EN` 버튼으로 바꿀 수 있고, 처음 켤 때는 Windows 표시 언어를 따릅니다.
 - 사용법 페이지와 친구가 받는 참가 페이지도 한국어·영어를 모두 지원합니다. 참가 페이지는 링크를 받은 분의 브라우저 언어에 맞춰 열립니다.
+- 봇 난이도를 「쉬움」으로 두고 앱을 다시 켜면 「보통」으로 돌아가던 문제를 고쳤습니다.
 
 ---
 
 - Added English. Switch with the `EN` button at the top right. On first launch it follows your Windows display language.
 - The usage page and the join page your friends open are both available in Korean and English. The join page follows the language of whoever opens the link.
+- Fixed bot difficulty falling back to Normal on restart when it was set to Easy.
 
 ---
 
