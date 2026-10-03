@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -20,12 +21,17 @@ namespace CS2PracticeHost
         private readonly ComboBox _bots = new ComboBox();
         private readonly ComboBox _level = new ComboBox();
         private readonly ComboBox _team = new ComboBox();
+        private readonly Button _lang = new Button();
         private readonly Button _help = new Button();
         private readonly Button _launch = new Button();
         private readonly Button _copyLink = new Button();
         private readonly Button _copyAddress = new Button();
         private readonly LinkLabel _update = new LinkLabel();
+        private readonly ToolTip _tips = new ToolTip();
         private readonly Timer _watch = new Timer { Interval = 2000 };
+
+        /// <summary>줄 이름은 언어를 바꿀 때 다시 써야 하므로 들고 있는다.</summary>
+        private readonly List<Label> _rowLabels = new List<Label>();
 
         private GameMap[] _maps = new GameMap[0];
         private bool _loading = true;
@@ -36,6 +42,9 @@ namespace CS2PracticeHost
 
         /// <summary>이미 복사해 준 서버. 맵 안에서 F10으로 연 서버도 이걸로 알아챈다.</summary>
         private string _copiedAddress;
+
+        /// <summary>언어를 바꿔도 알림 문구를 다시 쓸 수 있게 남겨 둔다.</summary>
+        private string _newerVersion;
 
         public MainForm(Settings settings)
         {
@@ -57,8 +66,8 @@ namespace CS2PracticeHost
         private void BuildLayout()
         {
             Text = Program.Title;
-            Font = new Font("맑은 고딕", 10);
-            ClientSize = new Size(380, 612);
+            Font = new Font(Strings.UiFont, 10);
+            ClientSize = new Size(424, 612);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -68,98 +77,131 @@ namespace CS2PracticeHost
             catch (Exception) { }
 
             _banner.Location = new Point(20, 14);
-            _banner.Size = new Size(304, 32);
+            _banner.Size = new Size(312, 32);
             _banner.TextAlign = ContentAlignment.MiddleLeft;
             _banner.Padding = new Padding(8, 0, 0, 0);
-            _banner.Font = new Font("맑은 고딕", 10, FontStyle.Bold);
+            _banner.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
             Controls.Add(_banner);
 
+            _lang.Location = new Point(336, 14);
+            _lang.Size = new Size(32, 32);
+            _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
+            _lang.TabStop = false;
+            _lang.Click += OnLangClick;
+            Controls.Add(_lang);
+
             _help.Text = "?";
-            _help.Font = new Font("맑은 고딕", 11, FontStyle.Bold);
-            _help.Location = new Point(328, 14);
+            _help.Location = new Point(372, 14);
             _help.Size = new Size(32, 32);
+            _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _help.TabStop = false;
             _help.Click += OnHelpClick;
             Controls.Add(_help);
 
             int y = 62;
-            AddRow("모드", _mode, ref y);
-            AddRow("맵", _map, ref y);
-            AddRow("봇 수", _bots, ref y);
-            AddRow("봇 난이도", _level, ref y);
-            AddRow("봇 팀", _team, ref y);
+            AddRow(_mode, ref y);
+            AddRow(_map, ref y);
+            AddRow(_bots, ref y);
+            AddRow(_level, ref y);
+            AddRow(_team, ref y);
 
             _status.Location = new Point(20, y + 2);
-            _status.Size = new Size(340, 192);
+            _status.Size = new Size(384, 192);
             _status.ForeColor = Color.DarkGreen;
             Controls.Add(_status);
 
-            _launch.Text = "▶  CS2 켜고 서버 열기";
-            _launch.Font = new Font("맑은 고딕", 11, FontStyle.Bold);
             _launch.Location = new Point(20, 462);
-            _launch.Size = new Size(340, 46);
+            _launch.Size = new Size(384, 46);
+            _launch.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _launch.Click += OnLaunchClick;
             Controls.Add(_launch);
 
-            _copyLink.Text = "참가 링크 복사 (친구에게 보내기)";
             _copyLink.Location = new Point(20, 516);
-            _copyLink.Size = new Size(340, 40);
+            _copyLink.Size = new Size(384, 40);
             _copyLink.Click += OnCopyLinkClick;
             Controls.Add(_copyLink);
 
-            _copyAddress.Text = "콘솔용 주소 복사";
             _copyAddress.Location = new Point(20, 564);
-            _copyAddress.Size = new Size(340, 32);
+            _copyAddress.Size = new Size(384, 32);
             _copyAddress.Click += OnCopyAddressClick;
             Controls.Add(_copyAddress);
 
             // 새 버전이 있을 때만 보인다. 그때 창이 그만큼 늘어난다
             _update.Location = new Point(20, 604);
-            _update.Size = new Size(340, 22);
+            _update.Size = new Size(384, 22);
             _update.TextAlign = ContentAlignment.MiddleCenter;
             _update.Visible = false;
             _update.LinkClicked += (s, e) => OpenInBrowser(UpdateCheck.DownloadPage);
             Controls.Add(_update);
+
+            SetStaticText();
         }
 
-        private void AddRow(string label, ComboBox box, ref int y)
+        private void AddRow(ComboBox box, ref int y)
         {
-            var text = new Label { Text = label, Location = new Point(20, y + 4), AutoSize = true };
+            var text = new Label { Location = new Point(20, y + 4), AutoSize = true };
             box.DropDownStyle = ComboBoxStyle.DropDownList;
             box.Location = new Point(120, y);
-            box.Width = 240;
+            box.Width = 284;
             box.MaxDropDownItems = 16;
             Controls.Add(text);
             Controls.Add(box);
+            _rowLabels.Add(text);
             y += 40;
+        }
+
+        /// <summary>고른 값과 무관하게 늘 같은 자리에 있는 문구.</summary>
+        private void SetStaticText()
+        {
+            string[] rows = { Strings.RowMode, Strings.RowMap, Strings.RowBots, Strings.RowLevel, Strings.RowTeam };
+            for (int i = 0; i < _rowLabels.Count && i < rows.Length; i++)
+                _rowLabels[i].Text = rows[i];
+
+            _lang.Text = Strings.LangToggle;
+            _launch.Text = Strings.Launch;
+            _copyLink.Text = Strings.CopyLink;
+            _copyAddress.Text = Strings.CopyAddress;
+
+            _tips.SetToolTip(_lang, Strings.LangToggleTip);
+            _tips.SetToolTip(_help, Strings.HelpTip);
+
+            if (_newerVersion != null) _update.Text = Strings.UpdateFound(_newerVersion);
         }
 
         private void FillControls()
         {
-            foreach (GameMode m in GameData.Modes) _mode.Items.Add(m.Name);
-            foreach (string c in GameData.BotCounts) _bots.Items.Add(c);
-            foreach (var l in GameData.BotLevels) _level.Items.Add(l.Key);
-            foreach (var t in GameData.BotTeams) _team.Items.Add(t.Key);
+            FillChoices();
 
             _mode.SelectedIndexChanged += OnModeChanged;
             foreach (ComboBox box in new[] { _map, _bots, _level, _team })
                 box.SelectedIndexChanged += (s, e) => SaveAll();
         }
 
+        /// <summary>맵을 뺀 나머지 목록. 언어를 바꾸면 보이는 이름이 달라지므로 다시 채운다.</summary>
+        private void FillChoices()
+        {
+            _mode.Items.Clear();
+            foreach (GameMode m in GameData.Modes) _mode.Items.Add(m.Name);
+
+            _bots.Items.Clear();
+            foreach (string c in GameData.BotCounts) _bots.Items.Add(c);
+
+            _level.Items.Clear();
+            foreach (Choice<int> l in GameData.BotLevels) _level.Items.Add(l.Name);
+
+            _team.Items.Clear();
+            foreach (Choice<string> t in GameData.BotTeams) _team.Items.Add(t.Name);
+        }
+
         private void RestoreSelection()
         {
-            _mode.SelectedIndex = Math.Max(0, IndexOfName(_mode, _settings.Mode));
+            _mode.SelectedIndex = Math.Max(0, GameData.IndexOfMode(_settings.Mode));
             FillMaps(_settings.Map ?? "de_dust2");
 
             _bots.SelectedIndex = _settings.Bots >= 0 && _settings.Bots < _bots.Items.Count
                 ? _settings.Bots : 0;
-            _level.SelectedIndex = Math.Max(1, IndexOfName(_level, _settings.Level));
-            _team.SelectedIndex = Math.Max(0, IndexOfName(_team, _settings.Team));
-        }
-
-        private static int IndexOfName(ComboBox box, string name)
-        {
-            return name == null ? -1 : box.Items.IndexOf(name);
+            _level.SelectedIndex = Math.Max(1, GameData.IndexOfLevel(_settings.Level));
+            _team.SelectedIndex = Math.Max(0, GameData.IndexOfTeam(_settings.Team));
         }
 
         private GameMode SelectedMode { get { return GameData.Modes[_mode.SelectedIndex]; } }
@@ -188,6 +230,9 @@ namespace CS2PracticeHost
 
         private void OnModeChanged(object sender, EventArgs e)
         {
+            // 목록을 비우는 동안에도 불린다. 그때는 고른 모드가 없어 읽을 것이 없다
+            if (_mode.SelectedIndex < 0) return;
+
             GameMap keep = SelectedMap;
 
             // 시작할 때도 불리므로 불러오는 중이라는 표시를 덮어쓰면 안 된다
@@ -197,6 +242,52 @@ namespace CS2PracticeHost
             _loading = wasLoading;
 
             SaveAll();
+        }
+
+        // ---------- 한국어 / 영어 ----------
+
+        private void OnLangClick(object sender, EventArgs e)
+        {
+            Strings.En = !Strings.En;
+            _settings.Lang = Strings.Code;
+            _settings.Save();
+            ApplyLanguage();
+        }
+
+        /// <summary>
+        /// 보이는 이름이 전부 바뀌므로 목록을 다시 채운다. 고른 자리는 언어와 무관한 값으로
+        /// 들고 있다가 되살린다 — 이름으로 찾으면 바뀐 이름과 안 맞아 기본값으로 떨어진다.
+        /// </summary>
+        private void ApplyLanguage()
+        {
+            string mode = SelectedMode.Key;
+            GameMap map = SelectedMap;
+            string mapId = map != null ? map.Id : null;
+            int bots = _bots.SelectedIndex;
+            int level = _level.SelectedIndex;
+            int team = _team.SelectedIndex;
+
+            bool wasLoading = _loading;
+            _loading = true;
+
+            Font = new Font(Strings.UiFont, 10);
+            _banner.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
+            _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
+            _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
+            _launch.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
+
+            SetStaticText();
+            FillChoices();
+
+            _mode.SelectedIndex = Math.Max(0, GameData.IndexOfMode(mode));
+            FillMaps(mapId);
+            if (bots >= 0 && bots < _bots.Items.Count) _bots.SelectedIndex = bots;
+            if (level >= 0) _level.SelectedIndex = level;
+            if (team >= 0) _team.SelectedIndex = team;
+
+            _loading = wasLoading;
+            SaveAll();
+            RefreshStatus();
         }
 
         // ---------- 저장 ----------
@@ -221,25 +312,18 @@ namespace CS2PracticeHost
                 GameData.BotLevels[_level.SelectedIndex].Value,
                 GameData.BotTeams[_team.SelectedIndex].Value);
 
-            _settings.Mode = mode.Name;
+            // 보이는 이름은 언어에 따라 바뀌므로, 남길 때는 언어와 무관한 값으로
+            _settings.Mode = mode.Key;
             _settings.Map = map.Id;
             _settings.Bots = _bots.SelectedIndex;
-            _settings.Level = _level.Text;
-            _settings.Team = _team.Text;
+            _settings.Level = GameData.BotLevels[_level.SelectedIndex].Value.ToString();
+            _settings.Team = GameData.BotTeams[_team.SelectedIndex].Value;
             _settings.Save();
 
             if (_launching) return;   // 서버 여는 중에는 진행 상황 문구를 유지한다
 
-            string note = mode.BotsConfigurable
-                ? OneSidedBotNote()
-                : "\n※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)";
-
-            _status.Text =
-                "저장됐어요!  (" + mode.Name + " / " + map.Name + ")" + note + "\n\n" +
-                "▶ 버튼 : CS2 켜고 서버 열기 (항상 이걸로 켜세요)\n" +
-                "F10 : (맵 안에서) 맵·모드 바꾸기 — 친구들 그대로\n\n" +
-                "※ 봇 설정은 맵을 새로 열 때 반영돼요\n" +
-                "※ 방장이 메뉴로 나가면 서버가 닫혀요";
+            string note = mode.BotsConfigurable ? OneSidedBotNote() : Strings.RetakeBotsNote;
+            _status.Text = Strings.Saved(mode.Name, map.Name, note);
         }
 
         /// <summary>
@@ -253,8 +337,7 @@ namespace CS2PracticeHost
 
             if (!oneSided || _bots.SelectedIndex <= 1) return "";
 
-            return "\n※ 한 팀으로 몰면 봇은 「사람 수 + 2」까지만 나와요\n" +
-                   "   (다 채우려면 봇 팀을 「양쪽에 섞기」로)";
+            return Strings.OneSidedBotNote;
         }
 
         // ---------- 상태 표시줄 ----------
@@ -264,26 +347,22 @@ namespace CS2PracticeHost
         {
             Cs2Status status = Cs2Watcher.Read();
 
-            _launch.Text = status.State == Cs2State.Off
-                ? "▶  CS2 켜고 서버 열기"
-                : "▶  CS2 다시 켜고 서버 열기";
+            _launch.Text = status.State == Cs2State.Off ? Strings.Launch : Strings.Relaunch;
 
             switch (status.State)
             {
                 case Cs2State.Off:
-                    SetBanner(Color.Gainsboro, Color.DimGray, "○  CS2 꺼져 있음 · 아래 ▶ 버튼으로 시작");
+                    SetBanner(Color.Gainsboro, Color.DimGray, Strings.BannerOff);
                     break;
                 case Cs2State.NoLog:
-                    SetBanner(Color.FromArgb(255, 243, 205), Color.DarkGoldenrod,
-                        "●  CS2 실행 중 · 주소를 읽으려면 ▶로 다시 켜기");
+                    SetBanner(Color.FromArgb(255, 243, 205), Color.DarkGoldenrod, Strings.BannerNoLog);
                     break;
                 case Cs2State.NoServer:
-                    SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue,
-                        "●  CS2 실행 중 · 서버 없음 (메인 화면)");
+                    SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue, Strings.BannerNoServer);
                     break;
                 case Cs2State.ServerOpen:
                     SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
-                        "●  서버 열림 (" + status.Server.OpenedAt.ToString("HH:mm") + ") · 맵 안에서 F10");
+                        Strings.BannerServerOpen(status.Server.OpenedAt.ToString("HH:mm")));
                     NoticeNewServer(status.Server);
                     return;
             }
@@ -292,7 +371,7 @@ namespace CS2PracticeHost
             {
                 _launching = false;
                 _launch.Enabled = true;
-                _status.Text = "서버를 찾지 못했어요.\nCS2가 켜졌는지 확인하고 다시 눌러주세요.";
+                _status.Text = Strings.ServerNotFound;
             }
         }
 
@@ -306,11 +385,7 @@ namespace CS2PracticeHost
             _copiedAddress = server.Address;
 
             SystemSounds.Asterisk.Play();
-            _status.Text = (CopyToClipboard(server.JoinLink)
-                    ? "서버가 열렸어요! 참가 링크가 복사됐어요.\n카톡/디스코드에 Ctrl+V 로 보내세요.\n"
-                    : "서버가 열렸어요!\n복사가 막혀서 아래 [참가 링크 복사]를 눌러주세요.\n") +
-                "친구가 누르면 안내 페이지를 거쳐 바로 들어와요.\n\n" +
-                server.JoinLink;
+            _status.Text = Strings.ServerOpened(CopyToClipboard(server.JoinLink), server.JoinLink);
         }
 
         private void SetBanner(Color back, Color fore, string text)
@@ -326,7 +401,7 @@ namespace CS2PracticeHost
         {
             if (Cs2Paths.SteamExe == null || !File.Exists(Cs2Paths.SteamExe))
             {
-                Tell("Steam을 찾지 못했어요.");
+                Tell(Strings.SteamNotFound);
                 return;
             }
 
@@ -338,10 +413,7 @@ namespace CS2PracticeHost
                 if (before.State == Cs2State.ServerOpen)
                 {
                     DialogResult answer = MessageBox.Show(
-                        "지금 서버가 열려 있어요.\n\n" +
-                        "새로 켜면 들어와 있는 친구들이 전부 끊겨요.\n" +
-                        "맵·모드만 바꿀 거라면 [아니요]를 누르고 맵 안에서 F10을 쓰세요.\n\n" +
-                        "그래도 CS2를 껐다가 새로 켤까요?",
+                        Strings.RelaunchWarning,
                         Program.Title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                     if (answer != DialogResult.Yes) return;
@@ -358,7 +430,7 @@ namespace CS2PracticeHost
             GameMap map = SelectedMap;
             if (map == null)
             {
-                Tell("고를 수 있는 맵이 없어요.\nCS2 설치 폴더를 제대로 찾았는지 확인해 주세요.");
+                Tell(Strings.NoMaps);
                 return;
             }
 
@@ -368,9 +440,7 @@ namespace CS2PracticeHost
             _launchedAt = DateTime.Now;
             _launching = true;
             _launch.Enabled = false;
-            _status.Text =
-                "CS2 켜는 중...  (" + mode.Name + " / " + map.Name + ")\n\n" +
-                "서버가 열리면 친구에게 보낼 참가 링크가\n자동으로 복사돼요. (1분 정도 걸려요)";
+            _status.Text = Strings.Launching(mode.Name, map.Name);
         }
 
         /// <summary>-condebug·바인드까지 인자로 붙여 사용자가 Steam 설정을 건드릴 일이 없게 한다.</summary>
@@ -390,14 +460,7 @@ namespace CS2PracticeHost
             ServerInfo server = FindServer();
             if (server == null) return;
 
-            Tell((CopyToClipboard(server.JoinLink)
-                     ? "참가 링크가 복사됐어요!\n카톡/디스코드에 Ctrl+V 로 붙여넣으세요.\n\n"
-                     : "복사가 막혔어요. 아래 주소를 직접 옮겨 주세요.\n\n") +
-                 server.JoinLink + "\n\n" +
-                 "친구가 링크를 누르면 안내 페이지가 열리고,\n" +
-                 "거기서 [게임 접속하기]를 누르면 바로 들어와요.\n" +
-                 "친구 쪽에 설치할 것도 콘솔 설정도 없어요.\n\n" +
-                 SharingWarning);
+            Tell(Strings.LinkCopied(CopyToClipboard(server.JoinLink), server.JoinLink));
         }
 
         private void OnCopyAddressClick(object sender, EventArgs e)
@@ -405,18 +468,8 @@ namespace CS2PracticeHost
             ServerInfo server = FindServer();
             if (server == null) return;
 
-            Tell((CopyToClipboard(server.ConnectCommand)
-                     ? "콘솔용 주소가 복사됐어요.\n\n"
-                     : "복사가 막혔어요. 아래 주소를 직접 옮겨 주세요.\n\n") +
-                 server.ConnectCommand + "\n\n" +
-                 "친구가 게임 콘솔(~ 키)에 붙여넣는 방식이에요.\n" +
-                 "보통은 [참가 링크 복사] 쪽이 더 편해요.\n\n" +
-                 SharingWarning);
+            Tell(Strings.AddressCopied(CopyToClipboard(server.ConnectCommand), server.ConnectCommand));
         }
-
-        private const string SharingWarning =
-            "※ 주소를 아는 사람은 누구나 들어올 수 있어요.\n" +
-            "   공개된 곳에 올리지 말고 친구에게만 보내세요.";
 
         /// <summary>지금 살아 있는 서버만 돌려준다. 죽은 주소를 친구에게 보내면 안 된다.</summary>
         private ServerInfo FindServer()
@@ -425,17 +478,16 @@ namespace CS2PracticeHost
             switch (status.State)
             {
                 case Cs2State.Off:
-                    Tell("CS2가 꺼져 있어요.\n▶ 버튼으로 서버를 열어주세요.");
+                    Tell(Strings.Cs2Off);
                     return null;
 
                 case Cs2State.NoLog:
-                    Tell("이 CS2는 앱으로 켠 게 아니라 주소를 읽을 수 없어요.\n\n" +
-                         "▶ 버튼으로 다시 켜주세요.");
+                    Tell(Strings.Cs2NotOurs);
                     return null;
 
                 // F10은 맵을 바꾸는 키라 서버가 돌고 있어야 먹는다. 여기선 ▶ 말고 길이 없다.
                 case Cs2State.NoServer:
-                    Tell("열려 있는 서버가 없어요.\n\n▶ 버튼으로 서버를 열어주세요.");
+                    Tell(Strings.NoServerOpen);
                     return null;
 
                 default:
@@ -464,7 +516,10 @@ namespace CS2PracticeHost
         }
 
         /// <summary>사용법은 웹에 둔다. 설명이 바뀔 때마다 앱을 다시 내보내지 않아도 된다.</summary>
-        private const string HelpUrl = "https://cs2.logstone.net/";
+        private static string HelpUrl
+        {
+            get { return "https://cs2.logstone.net/" + (Strings.En ? "?lang=en" : ""); }
+        }
 
         /// <summary>확인은 네트워크를 타므로 화면이 멈추지 않게 뒤에서 돌린다.</summary>
         private async void ShowUpdateIfAny()
@@ -472,7 +527,8 @@ namespace CS2PracticeHost
             string newer = await Task.Run(() => UpdateCheck.NewerVersion());
             if (newer == null || IsDisposed) return;
 
-            _update.Text = "새 버전 " + newer + " 이 나왔어요 — 받으러 가기";
+            _newerVersion = newer;
+            _update.Text = Strings.UpdateFound(newer);
             _update.Visible = true;
             ClientSize = new Size(ClientSize.Width, 642);
         }
@@ -483,17 +539,18 @@ namespace CS2PracticeHost
             catch (Exception)
             {
                 CopyToClipboard(url);
-                Tell("페이지를 열지 못했어요.\n주소를 복사했으니 브라우저에 붙여넣어 주세요.\n\n" + url);
+                Tell(Strings.CannotOpenPage(url));
             }
         }
 
         private void OnHelpClick(object sender, EventArgs e)
         {
-            try { Process.Start(HelpUrl); }
+            string url = HelpUrl;
+            try { Process.Start(url); }
             catch (Exception)
             {
-                CopyToClipboard(HelpUrl);
-                Tell("사용법 페이지를 열지 못했어요.\n주소를 복사했으니 브라우저에 붙여넣어 주세요.\n\n" + HelpUrl);
+                CopyToClipboard(url);
+                Tell(Strings.CannotOpenGuide(url));
             }
         }
     }

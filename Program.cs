@@ -35,6 +35,10 @@ namespace CS2PracticeHost
         private static void Start()
         {
             Settings settings = Settings.Load();
+
+            // 아래 폴더 고르기 창부터 문구가 나가므로, 창을 띄우기 전에 언어를 정해 둔다
+            Strings.Init(settings.Lang);
+
             Cs2Paths.Detect(settings.InstallDir);
 
             using (_startupOwner = NewTopmostOwner())
@@ -71,28 +75,24 @@ namespace CS2PracticeHost
         {
             if (Cs2Paths.SteamExe == null)
             {
-                Show("Steam을 찾지 못했어요.\n\nSteam이 설치돼 있는지 확인해 주세요.");
+                Show(Strings.SteamMissing);
                 return false;
             }
 
-            Show("CS2 설치 폴더를 찾지 못했어요.\n\n" +
-                 "다음 창에서 CS2가 설치된 폴더를 골라 주세요.\n" +
-                 "(이름이 'Counter-Strike Global Offensive' 인 폴더예요)");
+            Show(Strings.InstallDirMissing);
 
             while (true)
             {
                 using (var picker = new FolderBrowserDialog())
                 {
-                    picker.Description = "CS2 설치 폴더를 선택하세요";
+                    picker.Description = Strings.PickInstallDir;
                     picker.ShowNewFolderButton = false;
 
                     if (picker.ShowDialog(_startupOwner) != DialogResult.OK) return false;
                     if (Cs2Paths.UseManual(picker.SelectedPath)) return true;
                 }
 
-                Show("그 폴더에서는 CS2를 찾지 못했어요.\n\n" +
-                     "Steam 라이브러리에서 CS2를 우클릭 → 관리 → 로컬 파일 보기 로\n" +
-                     "열리는 폴더를 골라 주세요.");
+                Show(Strings.WrongInstallDir);
             }
         }
 
@@ -117,9 +117,7 @@ namespace CS2PracticeHost
             using (Form owner = NewTopmostOwner())
             {
                 MessageBox.Show(owner,
-                    "문제가 생겨 앱을 열지 못했어요.\n\n" +
-                    error.GetType().Name + "\n" + error.Message + "\n\n" +
-                    "자세한 내용이 클립보드에 복사됐어요.\n만든 사람에게 붙여넣어 보내 주세요.",
+                    Strings.Crash(error.GetType().Name, error.Message),
                     Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 

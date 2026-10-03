@@ -17,6 +17,9 @@ namespace CS2PracticeHost
         /// <summary>자동 탐지가 실패해 사용자가 직접 고른 CS2 설치 폴더.</summary>
         [DataMember(Name = "installDir")] public string InstallDir { get; set; }
 
+        /// <summary>"ko" | "en". 비어 있으면 윈도우 표시 언어를 따른다.</summary>
+        [DataMember(Name = "lang")] public string Lang { get; set; }
+
         private static string FilePath
         {
             get
