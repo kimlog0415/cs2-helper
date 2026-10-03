@@ -6,7 +6,7 @@
 
 친구와 CS2 연습 서버를 여는 Windows 도구
 
-[다운로드](https://github.com/kimlog0415/cs2-practice-host/releases/latest) · [사용법](https://cs2.logstone.net/) · [변경 내역](CHANGELOG.md)
+[다운로드](https://github.com/kimlog0415/cs2-practice-host/releases/latest) · [사용법](https://cs2.logstone.net/) · [영상](https://youtu.be/fWGAAhCcZOo) · [변경 내역](CHANGELOG.md)
 
 </div>
 
@@ -97,6 +97,8 @@ A Windows tool for opening a Counter-Strike 2 practice server with friends.
 When you start a practice game from a party, friends often fail to join with "Could not connect to the game server". The host's listen server needs a second or two to register with Steam and get its address, but the invite signal goes out before that — so friends try to connect to an empty address, time out, and never retry.
 
 This tool skips the lobby. It opens the server first, then hands you a link to send.
+
+There is also a [video walkthrough](https://youtu.be/fWGAAhCcZOo) in Korean covering the symptom, the cause, and the manual fix.
 
 **Host** — pick mode, map and bots, press ▶. CS2 launches and the server opens. A join link is copied automatically. Press F10 in game to change map or mode; connected friends stay in. Always launch CS2 with the ▶ button — if you start it from Steam directly, the app cannot read the server address.
 
